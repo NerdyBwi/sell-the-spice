@@ -1,40 +1,33 @@
-# sell-the-spice
-# Initial responsibilities:
-**Shop**    
-> Nuo Xiang Yan, Owen
->> Handles cards and goods being contained in a shop. Manages taking items in and out of the shop.
+# Sell the Spice!
+Roguelike turn based deckbuilder game themed around being a merchant aiming to make a profit through long distance travel and trading.
 
- **Display:** 
-> Anish, Brian + Potentially everyone else because GUIs hard
+# Initial responsibilities:
+**Shop:** Nuo Xiang Yan, Owen
+> Handles cards and goods being contained in a shop. Manages taking items in and out of the shop.
+
+**Display:** Anish, Brian + Potentially everyone else because GUIs hard
 > Presents game state and information to the user. (Start with terminal, “upgrade” to GUI or “downgrade” to text if needed)
 
- **Player:**
-> Owen, Brian
-Manages the player’s stats, gold, and inventory, as well as any changes to those values
+**Player:** Owen, Brian
+> Manages the player’s stats, gold, and inventory, as well as any changes to those values
 
- **Enemies:**
-> Brian, Owen
-Manages the enemies’ stats and behaviors, turn scaling, and loot dropped if defeated.
+**Enemies:** Brian, Owen
+> Manages the enemies’ stats and behaviors, turn scaling, and loot dropped if defeated.
 
- **Game:**
-> Anish, Gabe
-Handles interactions between modules, game states, user input, and visual UI, handles exceptions/failures
+**Game:** Anish, Gabe
+> Handles interactions between modules, game states, user input, and visual UI, handles exceptions/failures
 
- **Main:**
-> Gabe, Anish
-Initializes “Game” with RNG seed and prints exceptions/errors
+**Main:** Gabe, Anish
+> Initializes “Game” with RNG seed and prints exceptions/errors
 
- **Combat:**
-> Brian, Nuo Xiang Yan
-Handles the interaction between Player and enemies, as well as cards
+**Combat:** Brian, Nuo Xiang Yan
+> Handles the interaction between Player and enemies, as well as cards
 
- **Cards:**
-> Nuo Xiang Yan, Gabe
-Handles the execution of cards as well as their storage 
+**Cards:** Nuo Xiang Yan, Gabe
+> Handles the execution of cards as well as their storage 
 
- **Goods:**
-> Gabe, Nuo Xiang Yan
-Make a list of goods available to players. Interacts with Shop, Player, and Combat.
+**Goods:** Gabe, Nuo Xiang Yan
+> Make a list of goods available to players. Interacts with Shop, Player, and Combat.
 
 
 
