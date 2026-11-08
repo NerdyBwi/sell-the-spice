@@ -1,4 +1,0 @@
-(lang dune 3.24)
-(name ATeam)
-(sections (lib .) (bin ../../bin) (doc ../../doc/ATeam))
-(files (lib (META dune-package opam)) (bin (SellTheSpice)) (doc (README.md)))
