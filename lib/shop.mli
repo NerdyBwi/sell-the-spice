@@ -3,14 +3,10 @@ type t
 
 type item
 (** Record containing the type (Variant of cards/goods/anything else in shop)
-and its associated price*)
-
+    and its associated price*)
 
 val init_shop : Random.State.t -> t
 (** Takes in rng seed to generate shop *)
 
-val purchase_item : int -> t -> (result, t)
+val purchase_item : int -> t -> (t, string) result
 (** Takes in index of item and shop and returns *)
-
-
-

@@ -10,14 +10,15 @@ val get_name : t -> string
 val get_atk : t -> int
 (** Retrieves the attack stat of a player. *)
 
-(* 
- ===================================
-  Health functions 
- =================================== 
-*)
+(* ============================================================================
+   Health functions
+   ============================================================================ *)
 
 val get_hp : t -> int
-(** Retrieves the HP of a player. *)
+(** Retrieves the current HP of a player. *)
+
+val get_max_hp : t -> int
+(** Retrieves the max HP of a player. *)
 
 val add_hp : int -> t -> (unit, string) result
 (** [add_hp num player] adds that number of HP to the player's HP stat. Works
@@ -28,11 +29,9 @@ val check_alive : t -> bool
 (** [check_alive player] checks if the player's HP is positive. Returns [true]
     if it is.*)
 
-(* 
- ===================================
-  Gold functions 
- =================================== 
-*)
+(* ============================================================================
+   Gold functions
+   ============================================================================ *)
 val get_gold : t -> int
 (** Retrieves the number of gold the player has. *)
 
@@ -41,11 +40,9 @@ val add_gold : int -> t -> (unit, string) result
     Works with negative integers. Returns an Error if such modification would
     result in a negative gold balance. *)
 
-(*
- ===================================
-  Deck functions 
- =================================== 
-*)
+(* ============================================================================
+   Deck functions
+   ============================================================================ *)
 
 val get_deck : t -> Cards.t array
 (** Retrieves the deck of cards in a player's inventory. Does not contain empty
@@ -66,11 +63,9 @@ val shuffle_deck : Random.State.t -> t -> (unit, string) result
 (**[shuffle_deck rand_state player] takes a random state and shuffles the
    player's deck of cards. *)
 
-(*
- ===================================
-  Goods functions 
- =================================== 
-*)
+(* ============================================================================
+   Goods functions
+   ============================================================================ *)
 
 val get_goods : t -> (Goods.t * int) array
 (** Retrieves the player's goods inventory. Each entry contains the good and the

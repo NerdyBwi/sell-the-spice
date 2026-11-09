@@ -28,14 +28,14 @@ let get_name player = player.name
 (** Retrieves the attack stat of a player. *)
 let get_atk player = player.atk
 
-(* 
- ===================================
-  Health functions 
- =================================== 
-*)
+(* =================================== Health functions
+   =================================== *)
 
 (** Retrieves the HP of a player. *)
 let get_hp player = player.hp
+
+(** Retrieves the max HP of a player. *)
+let get_max_hp = failwith "Unimplemented"
 
 (** [check_alive player] checks if the player's HP is positive. Returns [true]
     if it is.*)
@@ -52,11 +52,8 @@ let add_hp num player =
           alive."
          num player.hp)
 
-(* 
- ===================================
-  Gold functions 
- =================================== 
-*)
+(* =================================== Gold functions
+   =================================== *)
 
 (** Retrieves the number of gold the player has. *)
 let get_gold player = player.gold
@@ -74,11 +71,8 @@ let add_gold num player =
           outcome."
          num player.gold)
 
-(*
- ===================================
-  Deck functions 
- =================================== 
-*)
+(* =================================== Deck functions
+   =================================== *)
 
 (** Retrieves the deck of cards in a player's inventory. Does not contain empty
     deck slots. Does not give cards in any particular order. *)
@@ -86,7 +80,9 @@ let get_deck player =
   player.deck |> Array.to_list
   |> List.fold_left
        (fun acc card ->
-         match card with Some thing -> thing :: acc | None -> acc)
+         match card with
+         | Some thing -> thing :: acc
+         | None -> acc)
        []
   |> Array.of_list
 
@@ -97,7 +93,9 @@ let deck_modifier_helper card (modify_value : Cards.t option) player e_msg =
   let deck = player.deck in
   deck
   |> Array.find_index (fun x ->
-      match x with Some thing when thing = card -> true | _ -> false)
+      match x with
+      | Some thing when thing = card -> true
+      | _ -> false)
   |> function
   | None -> Error e_msg
   | Some i -> Ok (deck.(i) <- modify_value)
@@ -121,13 +119,10 @@ let remove_card card player =
 (**[shuffle_deck rand_state player] takes a random state and shuffles the
    player's deck of cards. *)
 let shuffle_deck rand_state player =
-  Array.shuffle ~rand:(Random.State.int rand_state) player.deck
+  Ok (Array.shuffle ~rand:(Random.State.int rand_state) player.deck)
 
-(*
- ===================================
-  Goods functions 
- =================================== 
-*)
+(* =================================== Goods functions
+   =================================== *)
 
 (** Retrieves the player's goods inventory. Each entry contains the good and the
     count of the good. Does not contain empty inventory slots. *)
@@ -135,7 +130,9 @@ let get_goods player =
   player.goods |> Array.to_list
   |> List.fold_left
        (fun acc (opt, count) ->
-         match opt with Some good -> (good, count) :: acc | None -> acc)
+         match opt with
+         | Some good -> (good, count) :: acc
+         | None -> acc)
        []
   |> Array.of_list
 
@@ -154,13 +151,18 @@ let add_good good count player =
     let inventory = player.goods in
     inventory
     |> Array.find_index (fun x ->
-        match x with Some thing, held when thing = good -> true | _ -> false)
+        match x with
+        | Some thing, held when thing = good -> true
+        | _ -> false)
     |> function
     | Some i -> Ok (inventory.(i) <- (Some good, snd inventory.(i) + count))
     | None -> (
         let i =
           Array.find_index
-            (fun x -> match x with None, _ -> true | _ -> false)
+            (fun x ->
+              match x with
+              | None, _ -> true
+              | _ -> false)
             inventory
         in
         match i with
@@ -176,7 +178,9 @@ let remove_good_amount good count player =
   let inventory = player.goods in
   inventory
   |> Array.find_index (fun x ->
-      match x with Some thing, held when thing = good -> true | _ -> false)
+      match x with
+      | Some thing, held when thing = good -> true
+      | _ -> false)
   |> function
   | Some i -> Ok (inventory.(i) <- (Some good, snd inventory.(i) - count))
   | None ->
@@ -191,7 +195,9 @@ let remove_good good player =
   let inventory = player.goods in
   inventory
   |> Array.find_index (fun x ->
-      match x with Some thing, held when thing = good -> true | _ -> false)
+      match x with
+      | Some thing, held when thing = good -> true
+      | _ -> false)
   |> function
   | Some i ->
       inventory.(i) <- (None, 0);

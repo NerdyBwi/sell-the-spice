@@ -8,14 +8,12 @@ val init_combat : Random.State.t -> Player.t -> Enemies.t -> t
     [player] and [enemy]. *)
 
 val run_combat : Player.t -> Player.t
-(** [run_combat player] runs a combat encounter and returns the updated
-    player. *)
-
-(* 
- ===================================
-  State functions 
- =================================== 
+(** [run_combat player] runs a combat encounter and returns the updated player.
 *)
+
+(* ============================================================================
+   State functions
+   ============================================================================ *)
 
 val get_player : t -> Player.t
 (** Retrieves the player in the combat encounter. *)
@@ -29,11 +27,9 @@ val get_hand : t -> Cards.t list
 val is_over : t -> bool
 (** [is_over state] checks if the combat encounter has ended. *)
 
-(* 
- ===================================
-  Turn functions 
- =================================== 
-*)
+(* ============================================================================
+   Turn functions
+   ============================================================================ *)
 
 val play_card : Cards.t -> t -> (unit, string) result
 (** [play_card card state] plays [card] during the player's turn. Returns an

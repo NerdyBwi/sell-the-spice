@@ -4,17 +4,17 @@
 type t
 (** One enemy instance in combat. *)
 
-type action = (* We can decide to add on more actions *)
+type action =
+  (* We can decide to add on more actions *)
   | Attack of int
   | Defend of int
-  | Pass 
-(** [action] represents the intended move an enemy will perform on its turn. *)
+  | Pass
+      (** [action] represents the intended move an enemy will perform on its
+          turn. *)
 
-(* 
- ===================================
-  Construction functions 
- =================================== 
-*)
+(* ============================================================================
+   Construction functions
+   ============================================================================ *)
 
 val init_enemy : Random.State.t -> int -> t
 (** [init_enemy rng round] chooses one kind of enemy randomly using [rng] and
@@ -22,13 +22,12 @@ val init_enemy : Random.State.t -> int -> t
 
 val make_enemy : string -> int -> int -> int -> t
 (** [make_enemy name hp atk gold_drop] creates a custom enemy with [name],
-    starting [hp], base [atk], and base [gold_drop] for deterministic testing. *)
-
-(* 
- ===================================
-  Stat functions 
- =================================== 
+    starting [hp], base [atk], and base [gold_drop] for deterministic testing.
 *)
+
+(* ============================================================================
+   State functions
+   ============================================================================ *)
 
 val to_string : t -> string
 (** [to_string enemy] is a summary string of [enemy]'s name, HP, attack, and
@@ -60,14 +59,12 @@ val add_atk : int -> t -> unit
 (** [add_atk delta enemy] modifies [enemy]'s attack stat by [delta]. *)
 
 val set_block : int -> t -> unit
-(** [set_block amount enemy] sets [enemy]'s temporary defense/block to
-    [amount]. *)
-
-(* 
- ===================================
-  Combat functions 
- =================================== 
+(** [set_block amount enemy] sets [enemy]'s temporary defense/block to [amount].
 *)
+
+(* ============================================================================
+   Combat functions
+   ============================================================================ *)
 
 val get_intent : t -> action
 (** [get_intent enemy] is the action [enemy] currently plans to take at the end
