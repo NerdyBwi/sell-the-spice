@@ -1,13 +1,7 @@
-(* Track the player's stats, gold, and progress through the stages. *)
+(* Game progression and coordination between modules. *)
 type game_state = {
   stage : int;
-  health : int;
-  max_health : int;
-  damage : int;
-  defense : int;
-  gold : int;
-  goods_value : int;
-  alive : bool;
+  player : Player.t;
 }
 
 (* Each randomized stage leads to either a fight or a shop. *)
@@ -15,243 +9,139 @@ type encounter =
   | Fight
   | Shop
 let max_stages = 10
+let starting_hp = 100
 
-(* Show the player's current health, combat stats, and money. *)
-let display_stats state =
+(* Display the player's current stats using Player. *)
+let display_stats player =
   Printf.printf "\nHealth: %d/%d\n"
-    state.health state.max_health;
-  Printf.printf "Damage: %d\n" state.damage;
-  Printf.printf "Defense: %d\n" state.defense;
-  Printf.printf "Gold: %d\n" state.gold;
-  Printf.printf "Goods value: %d\n" state.goods_value
+    (Player.get_hp player) starting_hp;
+  Printf.printf "Damage: %d\n" (Player.get_atk player);
+  Printf.printf "Gold: %d\n" (Player.get_gold player);
+  Printf.printf "Goods value: %d\n"
+    (Goods.inventory_value (Player.get_goods player))
 
-(* Keep asking until the player enters one of the listed choices. *)
-let rec get_choice prompt options =
-  print_endline prompt;
-  List.iter
-    (fun (_, description) -> print_endline description)
-    options;
-  print_string "> ";
-  match read_line () with
-  | choice when List.mem choice (List.map fst options) ->
-      choice
-  | _ ->
-      print_endline "Invalid choice. Try again.";
-      get_choice prompt options
-
-(* Use the same menu for the opening shop and shops during later stages. *)
-let rec shop_menu title state =
+(* Placeholder for Shop. *)
+let run_shop title player =
   Printf.printf "\n========== %s ==========\n" title;
-  Printf.printf "Available gold: %d\n" state.gold;
-  let choice =
-    get_choice "What would you like to do?"
-      [ ("1", "1. Buy a card");
-        ("2", "2. Buy a good");
-        ("3", "3. View stats");
-        ("4", "4. Leave shop") ]
-  in
-  match choice with
-  | "1" ->
-      print_endline
-        "Will be implemented later.";
-      shop_menu title state
-  | "2" ->
-      print_endline
-        "Will be implemented later.";
-      shop_menu title state
-  | "3" ->
-      display_stats state;
-      shop_menu title state
-  | "4" ->
-      print_endline "Leaving the shop...";
-      state
-  | _ ->
-      state
+  print_endline "PENDING";
+  player
 
-(* Open the shop before the guaranteed first fight. *)
-let starting_shop state =
-  shop_menu "STARTING SHOP" state
-
-(* Roll once per stage to choose a shop (30%) or fight (70%). *)
-let choose_encounter () =
-  if Random.int 100 < 30 then
-    Shop
-  else
-    Fight
-
-(* Subtract defense from incoming damage before updating health. *)
-let take_damage state incoming_damage =
-  let actual_damage =
-    max 0 (incoming_damage - state.defense)
-  in
-  let new_health =
-    max 0 (state.health - actual_damage)
-  in
-  let updated_state = {
-    state with
-    health = new_health;
-    alive = new_health > 0
-  } in
-  if not updated_state.alive then
-    print_endline "\nYou have been defeated!"
-  else
-    Printf.printf "\nYou took %d damage!\n" actual_damage;
-  updated_state
-
-(* Run a fight against a basic enemy until either side is defeated. *)
-let combat state =
+(* Placeholder for Combat. *)
+let run_combat player =
   print_endline "\n========== COMBAT ==========";
-  print_endline "An enemy approaches!";
-  let enemy_health = 30 in
-  let enemy_damage = 10 in
-  let rec combat_round state enemy_health =
-    if not state.alive then
-      state
-    else (
-      Printf.printf "\nYour health: %d/%d\n"
-        state.health state.max_health;
-      Printf.printf "Enemy health: %d\n" enemy_health;
-      let choice =
-        get_choice "Choose an action:"
-          [ ("1", "1. Attack");
-            ("2", "2. View stats") ]
-      in
-      match choice with
-      | "1" ->
-          Printf.printf "\nYou deal %d damage!\n"
-            state.damage;
-          let remaining_enemy_health =
-            max 0 (enemy_health - state.damage)
-          in
-          if remaining_enemy_health = 0 then (
-            print_endline "You defeated the enemy!";
-            state
-          )
-          else (
-            print_endline "The enemy attacks!";
-            let updated_state =
-              take_damage state enemy_damage
-            in
-            combat_round updated_state remaining_enemy_health
-          )
-      | "2" ->
-          display_stats state;
-          combat_round state enemy_health
-      | _ ->
-          state
-    )
-  in
-  combat_round state enemy_health
+  print_endline "PENDING";
+  player
 
-(* Add a random reward of 10–30 gold after a victory. *)
-let reward_player state =
+(* Randomly select a shop (30%) or fight (70%). *)
+let choose_encounter () =
+  if Random.int 100 < 30 then Shop
+  else Fight
+
+(* Add a random reward of 10-30 gold after a victory. *)
+let reward_player player =
   let reward = 10 + Random.int 21 in
   Printf.printf "\nYou earned %d gold!\n" reward;
-  { state with gold = state.gold + reward }
+  match Player.add_gold reward player with
+  | Ok () -> player
+  | Error message ->
+      Printf.printf "Could not add reward: %s\n" message;
+      player
 
-(* Run the required fight immediately after the opening shop. *)
+(* Guaranteed first fight after the starting shop. *)
 let first_fight state =
   print_endline "\n========== FIRST FIGHT ==========";
-  let updated_state = combat state in
-  if updated_state.alive then
-    reward_player updated_state
-  else
-    updated_state
+  let updated_player = run_combat state.player in
+  { state with player = updated_player }
 
-(* Run the shop or fight selected for the current stage. *)
+(* Execute the randomly selected encounter for a stage. *)
 let execute_stage state =
   Printf.printf "\n========== STAGE %d / %d ==========\n"
     state.stage max_stages;
   match choose_encounter () with
   | Fight ->
-      let updated_state = combat state in
-      if updated_state.alive then
-        reward_player updated_state
-      else
-        updated_state
+      let updated_player = run_combat state.player in
+      { state with player = updated_player }
   | Shop ->
-      shop_menu "SHOP" state
+      let updated_player = run_shop "SHOP" state.player in
+      { state with player = updated_player }
 
-(* Use the player's final gold as the current score. *)
-let calculate_score state =
-  state.gold
+(* Calculate the score from gold and remaining goods. *)
+let calculate_score player =
+  Player.get_gold player
+  + Goods.inventory_value (Player.get_goods player)
 
-(* Convert the remaining goods value into gold before scoring. *)
-let sell_all_goods state =
+(* Final selling phase. *)
+let sell_all_goods player =
   print_endline "\n========== FINAL SELLING PHASE ==========";
-  Printf.printf "Your goods are worth %d gold.\n"
-    state.goods_value;
-  let final_gold = state.gold + state.goods_value in
-  Printf.printf "Goods sold for %d gold!\n"
-    state.goods_value;
-  {
-    state with
-    gold = final_gold;
-    goods_value = 0
-  }
+  let goods_value =
+    Goods.inventory_value (Player.get_goods player)
+  in
+  Printf.printf "Your goods are worth %d gold.\n" goods_value;
+  Printf.printf "Goods sold for %d gold!\n" goods_value;
+  player
 
-(* Print the player's final results after the last stage or defeat. *)
-let finish_game state =
-  let final_state = sell_all_goods state in
+(* Display the final report. *)
+let finish_game player =
+  let final_player = sell_all_goods player in
   print_endline "\n========== FINAL REPORT ==========";
-  if final_state.alive then
+  if Player.check_alive final_player then
     print_endline "Congratulations! You completed the game!"
   else
     print_endline "You were defeated!";
   Printf.printf "\nFinal health: %d/%d\n"
-    final_state.health final_state.max_health;
+    (Player.get_hp final_player) starting_hp;
   Printf.printf "Final damage: %d\n"
-    final_state.damage;
-  Printf.printf "Final defense: %d\n"
-    final_state.defense;
+    (Player.get_atk final_player);
   Printf.printf "Final gold: %d\n"
-    final_state.gold;
-  let score = calculate_score final_state in
-  Printf.printf "\n================================\n";
+    (Player.get_gold final_player);
+  let score = calculate_score final_player in
+  print_endline "\n================================";
   Printf.printf "FINAL SCORE: %d\n" score;
-  Printf.printf "================================\n";
+  print_endline "================================";
   print_endline "\nThanks for playing Sell the Spice!"
 
-(* Continue through the 10 randomized stages unless the player dies. *)
+(* Continue through the randomized stages unless the player dies. *)
 let rec game_loop state =
-  if state.stage > max_stages || not state.alive then
-    finish_game state
+  if state.stage > max_stages
+     || not (Player.check_alive state.player)
+  then
+    finish_game state.player
   else
     let updated_state = execute_stage state in
-    if updated_state.alive then
+    if Player.check_alive updated_state.player then
       game_loop {
         updated_state with
         stage = state.stage + 1
       }
     else
-      finish_game updated_state
+      finish_game updated_state.player
 
-(* Set starting stats, open the first shop, and begin the stages. *)
+(* Initialize the game and preserve the original progression. *)
 let start_game seed =
   Random.init seed;
   print_endline "================================";
   print_endline "         SELL THE SPICE";
   print_endline "================================";
-  let initial_state = {
-    stage = 1;
-    health = 100;
-    max_health = 100;
-    damage = 15;
-    defense = 5;
-    gold = 100;
-    goods_value = 0;
-    alive = true;
-  } in
   print_endline "\nWelcome to Sell the Spice!";
+  let player =
+    Player.init_player "Merchant" 100 15 100 10 10
+  in
+  display_stats player;
 
-  (* 1. Starting shop *)
-  let state_after_shop = starting_shop initial_state in
+  (* 1. Guaranteed starting shop. *)
+  let state_after_shop =
+    run_shop "STARTING SHOP" player
+  in
+  let state_after_shop = {
+    stage = 1;
+    player = state_after_shop;
+  } in
 
-  (* 2. Guaranteed first fight *)
+  (* 2. Guaranteed first fight. *)
   let state_after_fight = first_fight state_after_shop in
 
-  (* 3. Ten randomized stages *)
-  if state_after_fight.alive then
+  (* 3. Ten randomized stages. *)
+  if Player.check_alive state_after_fight.player then
     game_loop state_after_fight
   else
-    finish_game state_after_fight
+    finish_game state_after_fight.player
