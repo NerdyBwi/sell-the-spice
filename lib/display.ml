@@ -40,19 +40,15 @@ let print_selling_phase goods_value =
 (** [print_final_report player score] displays the final report. *)
 let print_final_report player score =
   print_section "FINAL REPORT";
-
   if Player.check_alive player then
     print_endline "Congratulations! You completed the game!"
   else
     print_endline "You were defeated!";
-
   Printf.printf "\nFinal health: %d/%d\n"
     (Player.get_hp player)
     (Player.get_max_hp player);
-
   Printf.printf "Final damage: %d\n" (Player.get_atk player);
   Printf.printf "Final gold: %d\n" (Player.get_gold player);
-
   print_endline "\n================================";
   Printf.printf "FINAL SCORE: %d\n" score;
   print_endline "================================"
