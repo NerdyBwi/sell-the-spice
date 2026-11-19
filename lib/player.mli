@@ -86,6 +86,13 @@ val add_deck_size : int -> t -> (unit, string) result
     in less slots than currently held cards. Does not allow for a modification
     that would result in a negative number of deck slots. *)
 
+val draw_iter : Cards.t array -> unit -> Cards.t option * int
+(**[draw_iter deck] creates function that iterates over a snapshot of a deck of
+   cards and returns [Some] card and the value of the pointer.
+
+   If the pointer exceeds the max size of the deck, then the function returns
+   [None] and the value of the pointer.*)
+
 (* ============================================================================
    Goods functions
    ============================================================================ *)

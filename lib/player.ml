@@ -194,6 +194,20 @@ let add_deck_size n player =
     in
     Ok (player.deck <- new_deck)
 
+(**[draw_iter deck] creates function that iterates over a snapshot of a deck of
+   cards and returns [Some] card and the value of the pointer.
+
+   If the pointer exceeds the max size of the deck, then the function returns
+   [None] and the value of the pointer.*)
+let draw_iter deck =
+  let i = ref 0 in
+  fun () ->
+    if !i >= Array.length deck then (None, !i)
+    else
+      let card = deck.(!i) in
+      incr i;
+      (Some card, !i)
+
 (* ============================================================================
    Goods inventory functions
    ============================================================================ *)
