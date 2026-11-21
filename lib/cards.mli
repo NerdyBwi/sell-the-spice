@@ -16,4 +16,3 @@ val generate_card : string -> t
 val get_card_name : t -> string
 val get_card_effect : t -> keyword * int
 val get_card_cost : t -> int
-val get_card_effect : t -> int

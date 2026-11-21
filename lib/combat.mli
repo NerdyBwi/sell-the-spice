@@ -18,8 +18,8 @@ val run_combat : Player.t -> Player.t
 val get_player : t -> Player.t
 (** Retrieves the player in the combat encounter. *)
 
-val get_enemy : t -> Enemies.t
-(** Retrieves the enemy in the combat encounter. *)
+val get_enemies : t -> Enemies.t list
+(** Retrieves the enemies in the combat encounter. *)
 
 val get_hand : t -> Cards.t list
 (** Retrieves the cards currently in the player's hand. *)
