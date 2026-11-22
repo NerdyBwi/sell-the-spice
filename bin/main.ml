@@ -15,7 +15,6 @@ let clean_name s =
 (* Print [prompt] and read one line of input. *)
 let ask prompt =
   print_string prompt;
-  flush stdout;
   read_line ()
 
 (* Generate a fresh seed from the system's randomness. *)
@@ -51,7 +50,7 @@ let get_seed () =
 (* Ask for the player's name, falling back to a default when blank. *)
 let get_name () = clean_name (ask "What's your merchant's name? ")
 
-(* Run the intro, start the game, and handle input or runtime errors. *)
+(* Run the intro and start the game. *)
 let () =
   try
     let seed = get_seed () in
