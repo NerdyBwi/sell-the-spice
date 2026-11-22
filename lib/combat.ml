@@ -10,20 +10,15 @@ type t = {
   mutable enemies : Enemies.t list;
   mutable status : status;
   mutable turn : int;
-  mutable cards_played : int
+  mutable cards_played : int;
 }
+
 let max_cards_per_turn = 3
 
 (** [init_combat rng player enemies] initializes a combat encounter between
     [player] and [enemies]. *)
-let init_combat rng (player : Player.t)  (enemy : Enemies.t list) = 
-  { player = player;
-    block = 0;
-    enemies = enemies;
-    status = Ongoing;
-    turn = 1;
-    cards_played = 0
-}
+let init_combat rng (player : Player.t) (enemies : Enemies.t list) =
+  { player; block = 0; enemies; status = Ongoing; turn = 1; cards_played = 0 }
 
 (** float * int operator *)
 let ( *.* ) f i = f *. float_of_int i
@@ -40,6 +35,12 @@ let get_player s = s.player
 
 (** Retrieves the enemy in the combat encounter. *)
 let get_enemies s = s.enemies
+
+(** [get_block state] retrieves the player's current temporary block. *)
+let get_block state = state.block
+
+(** [get_turn state] retrieves the current turn number. *)
+let get_turn state = state.turn
 
 (** Retrieves the cards currently in the player's hand. *)
 let get_hand s = []
@@ -83,7 +84,7 @@ let deal_damage_to_player damage state =
   state.block <- state.block - absorbed;
   let remaining = damage - absorbed in
   if remaining > 0 && Player.check_alive state.player then
-    (Player.add_hp (-remaining) state.player)
+    ignore (Player.add_hp (-remaining) state.player)
 
 (** [execute_enemy_turn enemy state] resolves [enemy]'s planned action. *)
 let execute_enemy_turn enemy state =
@@ -112,11 +113,13 @@ let play_card (c : Cards.t) (s : t) =
   | Draw -> Error "Unimplemented card type: Draw"
   | Buff -> Error "Unimplmented card type: Buff"
 
-(** [end_turn rng state] ends the player's turn and executes the enemies' turn. *)
+(** [end_turn rng state] ends the player's turn and executes the enemies' turn.
+*)
 let end_turn (rng : Random.State.t) (state : t) =
   if not (is_over state) then begin
     List.iter (fun enemy -> execute_enemy_turn enemy state) state.enemies;
-    if (not (Player.check_alive state.player)) || find_enemy state.enemies = None
+    if
+      (not (Player.check_alive state.player)) || find_enemy state.enemies = None
     then state.status <- Finished
     else begin
       state.block <- 0;
@@ -126,7 +129,7 @@ let end_turn (rng : Random.State.t) (state : t) =
         (fun enemy ->
           if Enemies.check_alive enemy then begin
             Enemies.scale_turn state.turn enemy;
-            (Enemies.choose_next_intent rng enemy)
+            ignore (Enemies.choose_next_intent rng enemy)
           end)
         state.enemies
     end
