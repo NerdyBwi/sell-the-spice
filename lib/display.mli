@@ -25,6 +25,6 @@ val print_final_report : Player.t -> int -> unit
 val print_goodbye : unit -> unit
 (** [print_goodbye ()] displays the closing message. *)
 
-val print_combat : Player.t -> Enemies.t list -> unit
-(** [print_combat player enemies] displays the player's combat statistics and
-    the first enemy in [enemies], or a message if no enemies remain. *)
+val print_combat : Combat.t -> unit
+(** [print_combat combat] displays the player, enemy, and cards currently in the
+    player's hand. *)
