@@ -49,21 +49,29 @@ let print_final_report player score =
 (** [print_goodbye ()] displays the closing message. *)
 let print_goodbye () = print_endline "\nThanks for playing Sell the Spice!"
 
-(** [print_combat player enemies] displays the player's combat statistics and
-    the first enemy in [enemies]. If the list is empty, displays that no enemies
-    remain. *)
-let print_combat player enemies =
+(** [print_combat combat] displays the player, enemy, and cards currently in the
+    player's hand. *)
+let print_combat combat =
+  let player = Combat.get_player combat in
+  let enemy = Combat.get_enemy combat in
+  let hand = Combat.get_hand combat in
   print_section "COMBAT";
   Printf.printf "Player: %s\n" (Player.get_name player);
   Printf.printf "Health: %d/%d\n" (Player.get_hp player)
     (Player.get_max_hp player);
   Printf.printf "Damage: %d\n" (Player.get_atk player);
   Printf.printf "Gold: %d\n" (Player.get_gold player);
-  match enemies with
-  | [] -> print_message "No enemies remain."
-  | enemy :: _ ->
-      Printf.printf "\nEnemy: %s\n" (Enemies.get_name enemy);
-      Printf.printf "Enemy health: %d/%d\n" (Enemies.get_hp enemy)
-        (Enemies.get_max_hp enemy);
-      Printf.printf "Enemy damage: %d\n" (Enemies.get_atk enemy);
-      Printf.printf "Enemy intent: %s\n" (Enemies.intent_to_string enemy)
+  Printf.printf "\nEnemy: %s\n" (Enemies.get_name enemy);
+  Printf.printf "Enemy health: %d/%d\n" (Enemies.get_hp enemy)
+    (Enemies.get_max_hp enemy);
+  Printf.printf "Enemy damage: %d\n" (Enemies.get_atk enemy);
+  Printf.printf "Enemy intent: %s\n" (Enemies.intent_to_string enemy);
+  print_endline "\nYour hand:";
+  match hand with
+  | [] -> print_endline "No cards in hand."
+  | cards ->
+      List.iter
+        (fun card ->
+          Printf.printf "- %s (Cost: %d)\n" (Cards.get_card_name card)
+            (Cards.get_card_cost card))
+        cards
