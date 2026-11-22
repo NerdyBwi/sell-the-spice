@@ -68,7 +68,7 @@ let init_enemies rng round =
     (* extracts the stats out of the list part of the enemy data *)
     match lst with
     | [ hp; atk; def; gd ] -> (hp, atk, def, gd)
-    | _ -> failwith "Malformed enemy data error!"
+    | _ -> failwith ("Malformed enemy data error for: " ^ name)
   in
   let hp, atk, def, gd =
     stats |> List.map (fun x -> int_of_float (x **. scale)) |> helper_tup_of_lst
@@ -145,9 +145,7 @@ let get_intent e = e.intent
 let choose_next_intent rng e =
   let roll = Random.State.int rng 10 in
   let next_intent =
-    if roll < 6 then Attack e.atk
-    else if roll < 9 then Defend e.def
-    else Pass
+    if roll < 6 then Attack e.atk else if roll < 9 then Defend e.def else Pass
   in
   e.intent <- next_intent;
   next_intent

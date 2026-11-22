@@ -76,9 +76,9 @@ val remove_card : Cards.t -> t -> (unit, string) result
 (** [remove_card card player] removes that card from the player's deck. Returns
     an Error if the deck does not contain that card. *)
 
-val shuffle_deck : Random.State.t -> t -> (unit, string) result
-(**[shuffle_deck rand_state player] takes a random state and shuffles the
-   player's deck of cards. *)
+val shuffle_deck : Random.State.t -> Cards.t array -> (unit, string) result
+(**[shuffle_deck rand_state deck] takes a random state and shuffles a given deck
+   of cards. *)
 
 val add_deck_size : int -> t -> (unit, string) result
 (** [add_deck_size num player] adds [num] deck slots to the player's deck. Works
@@ -121,7 +121,28 @@ val remove_good_amount : Goods.t -> int -> t -> (unit, string) result
 val remove_good : Goods.t -> t -> (int, string) result
 (** [remove_good good player] removes all of the goods from the player's
     inventory with that associated name. Does not modify the player's stats.
-    Returns the number of goods removed from the player if successful.
+    Returns the number of goods removed from the player if successful. Returns
+    an error if the good cannot be found.
+
+    If the good was not found, returns [Error error_str_unfound_good_remove].*)
+
+val sell_good_amount : Goods.t -> int -> t -> (unit, string) result
+(** [sell_good_amount good count player] sells a number of goods from a player's
+    inventory. Does not modify the player's stats.
+
+    If the count is negative, returns
+    [Error error_str_negative_good_remove_count].
+
+    If the good was not found, returns [Error error_str_unfound_good_remove].
+
+    If the count exceeds the held amount, returns
+    [Error error_str_excess_good_remove]*)
+
+val sell_good : Goods.t -> t -> (int, string) result
+(** [sell_good good player] sells all of the goods from the player's inventory
+    with that associated name. Modifies the player's gold count based on the
+    [sell_multiplier] and good [price]. Does not modify the player's other
+    stats. Returns an error if the good cannot be found.
 
     If the good was not found, returns [Error error_str_unfound_good_remove].*)
 

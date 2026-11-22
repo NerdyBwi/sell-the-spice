@@ -11,14 +11,18 @@ type t = {
   mutable status : status;
   mutable turn : int;
   mutable cards_played : int;
+  (* contains a counter for where the draw should start from *)
+  mutable draw_pile : Cards.t array * int;
+  mutable hand : Cards.t list;
 }
 
+(**Variable that can be changed internally to change the number of cards that
+   can be played per turn. *)
 let max_cards_per_turn = 3
 
-(** [init_combat rng player enemies] initializes a combat encounter between
-    [player] and [enemies]. *)
-let init_combat rng (player : Player.t) (enemies : Enemies.t list) =
-  { player; block = 0; enemies; status = Ongoing; turn = 1; cards_played = 0 }
+(**Variable that can be changed internally to change the number of cards drawn
+   per turn. *)
+let max_cards_drawn_per_turn = 5
 
 (** float * int operator *)
 let ( *.* ) f i = f *. float_of_int i
@@ -37,17 +41,17 @@ let get_player s = s.player
 let get_enemies s = s.enemies
 
 (** [get_block state] retrieves the player's current temporary block. *)
-let get_block state = state.block
+let get_block s = s.block
 
 (** [get_turn state] retrieves the current turn number. *)
-let get_turn state = state.turn
+let get_turn s = s.turn
 
 (** Retrieves the cards currently in the player's hand. *)
-let get_hand s = []
+let get_hand s = s.hand
 
 (** [get_cards_played state] retrieves how many cards have been played on the
     current turn. *)
-let get_cards_played state = state.cards_played
+let get_cards_played s = s.cards_played
 
 (** [is_over state] checks if the combat encounter has ended. *)
 let is_over s =
@@ -58,6 +62,65 @@ let is_over s =
 (* ============================================================================
    Turn functions
    ============================================================================ *)
+
+(** error string for if shuffling somehow fails, (which it should never do, of
+    course). *)
+let shuffle_error e =
+  Printf.sprintf
+    "Unexpected error: [%s] from attempting to shuffle the deck of cards while \
+     in combat!"
+    e
+
+(**[draw_hand state] takes a combat state and draws [max_cards_per_turn] cards
+   from the draw_pile.*)
+let draw_hand rng state =
+  let draw_deck, start_i = state.draw_pile in
+  let size = Array.length draw_deck in
+  let rec construct_hand acc loc counter =
+    (* Recursive helper method for drawing cards. [acc] is the accumulator list,
+       [loc] is the current position in the array, [counter] is current the
+       number of cards drawn *)
+    if counter >= max_cards_drawn_per_turn || loc > size then (acc, loc)
+    else
+      let acc' = draw_deck.(loc) :: acc in
+      construct_hand acc' (loc + 1) (counter + 1)
+  in
+  let new_hand, end_i = construct_hand [] start_i 0 in
+  if end_i < size then (
+    (* not overdrawn case *)
+    state.draw_pile <- (draw_deck, end_i);
+    state.hand <- new_hand)
+  else
+    (* overdrawn case *)
+    match Player.shuffle_deck rng draw_deck with
+    | Error e -> failwith (shuffle_error e)
+    | Ok _ ->
+        state.draw_pile <- (draw_deck, 0);
+        state.hand <- new_hand
+
+(** [init_combat rng player enemies] initializes a combat encounter (state)
+    between [player] and [enemies]. *)
+let init_combat rng (player : Player.t) (enemies : Enemies.t list) =
+  let draw_pile = Player.get_deck player in
+  match Player.shuffle_deck rng draw_pile with
+  | Error e ->
+      (* an error result here is completely unexpected *)
+      failwith (shuffle_error e)
+  | Ok _ ->
+      let state =
+        {
+          player;
+          block = 0;
+          enemies;
+          status = Ongoing;
+          turn = 1;
+          cards_played = 0;
+          draw_pile = (draw_pile, 0);
+          hand = [];
+        }
+      in
+      draw_hand rng state;
+      state
 
 (** Helper function [find_enemy enemies] finds the first enemy in a list of
     enemies that is not dead and returns it as an option.*)
@@ -138,10 +201,10 @@ let end_turn (rng : Random.State.t) (state : t) =
 (** [run_combat rng card state] plays [card] in [state], increments
     [cards_played], and executes the enemies' turn once three cards have been
     played if combat is still ongoing. *)
-let run_combat (rng : Random.State.t) (card : Cards.t) (state : t) =
+let rec run_combat (rng : Random.State.t) (card : Cards.t) (state : t) =
   if not (is_over state) then
     match play_card card state with
-    | Error _ -> ()
+    | Error _ -> () (* does nothing *)
     | Ok () ->
         state.cards_played <- state.cards_played + 1;
         if (not (is_over state)) && state.cards_played >= max_cards_per_turn
