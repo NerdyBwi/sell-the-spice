@@ -312,6 +312,33 @@ let remove_good good player =
       Ok (snd inventory.(i))
   | None -> Error error_str_unfound_good_remove
 
+(** [sell_good_amount good sell_multiplier count player] sells a number of goods
+    from a player's inventory. Modifies the player's gold count based on the
+    [sell_multiplier] and good [price]. Does not modify the player's other
+    stats. Returns an Error if the count is negative, or if the good cannot be
+    found. *)
+let sell_good_amount good sell_mod count player =
+  match remove_good_amount good count player with
+  | Error e -> Error e
+  | Ok () ->
+      let gold_increase =
+        float_of_int (Goods.price good * count) *. sell_mod |> int_of_float
+      in
+      add_gold gold_increase player
+
+(** [remove_good good player] removes all of the goods from the player's
+    inventory with that associated name. Modifies the player's gold count based
+    on the [sell_multiplier] and good [price]. Does not modify the player's
+    other stats. Returns an error if the good cannot be found. *)
+let sell_good good sell_mod player =
+  match remove_good good player with
+  | Error e -> Error e
+  | Ok count ->
+      let gold_increase =
+        float_of_int (Goods.price good * count) *. sell_mod |> int_of_float
+      in
+      add_gold gold_increase player
+
 (** [add_good_size num player] adds [num] inventory slots to the player's goods
     inventory. Works with negative integers. Does not allow for a modification
     that would result in less slots than currently held items. Does not allow
