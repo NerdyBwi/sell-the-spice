@@ -326,10 +326,10 @@ let sell_good_amount good sell_mod count player =
       in
       add_gold gold_increase player
 
-(** [remove_good good player] removes all of the goods from the player's
-    inventory with that associated name. Modifies the player's gold count based
-    on the [sell_multiplier] and good [price]. Does not modify the player's
-    other stats. Returns an error if the good cannot be found. *)
+(** [sell_good good player] sells all of the goods from the player's inventory
+    with that associated name. Modifies the player's gold count based on the
+    [sell_multiplier] and good [price]. Does not modify the player's other
+    stats. Returns an error if the good cannot be found. *)
 let sell_good good sell_mod player =
   match remove_good good player with
   | Error e -> Error e

@@ -159,9 +159,9 @@ let execute_enemy_turn enemy state =
     | Enemies.Pass -> ()
   end
 
-(** [play_card card state] plays [card] during the player's turn. Returns an
-    Error if the card cannot be played. *)
-let play_card (c : Cards.t) (s : t) =
+(** [use_card card state] performs the effect of the [card] during the player's
+    turn. Returns an Error if the card cannot be played. *)
+let use_card (c : Cards.t) (s : t) =
   let open Cards in
   let keyword, value = get_card_effect c in
   match keyword with
@@ -176,10 +176,48 @@ let play_card (c : Cards.t) (s : t) =
   | Draw -> Error "Unimplemented card type: Draw"
   | Buff -> Error "Unimplmented card type: Buff"
 
+(** [play_card input state] plays the card associated with [input] from the
+    player's hand. Returns an Error if the card cannot be played / the input is
+    invalid. *)
+let play_card (i : int) (s : t) =
+  if i < 0 then Error "Invalid input, cannot select a negative hand index."
+  else
+    let hand = get_hand s in
+    let size = List.length hand in
+    if i > size then Error "Invalid input"
+    else
+      let helper_choose_card acc card =
+        (* takes a card, checks if the input matches the current index, then
+           choose to keep the new card or to add it to the new hand and
+           increments the index. *)
+        let held, temp_hand, loc = acc in
+        if i = loc then (* is the target card *)
+          (Some card, temp_hand, loc)
+        else (* not the target card *)
+          (held, card :: temp_hand, loc + 1)
+      in
+
+      let selected_card_opt, new_hand, _ =
+        List.fold_left helper_choose_card (None, [], 0) hand
+      in
+      match selected_card_opt with
+      | None ->
+          (* this branch should never occur in theory *)
+          Error "Could not find card in hand"
+      | Some selected_card -> (
+          match use_card selected_card s with
+          | Error e ->
+              (* card was not consumed, so we don't remove it *) Error e
+          | Ok () ->
+              (* card was consumed, so we do remove it *)
+              Ok (s.hand <- new_hand))
+
 (** [end_turn rng state] ends the player's turn and executes the enemies' turn.
 *)
 let end_turn (rng : Random.State.t) (state : t) =
   if not (is_over state) then begin
+    (* draws a new hand at the end of the player's turn *)
+    draw_hand rng state;
     List.iter (fun enemy -> execute_enemy_turn enemy state) state.enemies;
     if
       (not (Player.check_alive state.player)) || find_enemy state.enemies = None
@@ -198,14 +236,21 @@ let end_turn (rng : Random.State.t) (state : t) =
     end
   end
 
-(** [run_combat rng card state] plays [card] in [state], increments
-    [cards_played], and executes the enemies' turn once three cards have been
-    played if combat is still ongoing. *)
-let rec run_combat (rng : Random.State.t) (card : Cards.t) (state : t) =
-  if not (is_over state) then
-    match play_card card state with
-    | Error _ -> () (* does nothing *)
-    | Ok () ->
-        state.cards_played <- state.cards_played + 1;
-        if (not (is_over state)) && state.cards_played >= max_cards_per_turn
-        then end_turn rng state
+(** [run_combat rng state input] advances the combat phase by modifying [state]
+    when given an [input] action. [None] inputs are needed to initiate enemy
+    turns or something. *)
+let run_combat (rng : Random.State.t) (state : t) (input_opt : int option) =
+  if not (is_over state) then begin
+    let played_count = get_cards_played state in
+    if played_count >= max_cards_per_turn || List.length state.hand <= 0 then
+      end_turn rng state
+    else (* it is the player's turn. *)
+      match input_opt with
+      | None ->
+          (*probably an invalid input, we'll just ignore it and do nothing*)
+          ()
+      | Some input -> (
+          match play_card input state with
+          | Error _ -> () (* does nothing *)
+          | Ok () -> state.cards_played <- played_count + 1)
+  end
