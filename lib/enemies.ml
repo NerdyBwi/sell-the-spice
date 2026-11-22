@@ -1,3 +1,6 @@
+(** Holds the enemy representation and the methods for creating and modifying
+    them. *)
+
 type action =
   (* We can decide to add on more actions *)
   | Attack of int
@@ -139,7 +142,15 @@ let get_intent e = e.intent
 
 (** [choose_next_intent rng enemy] selects, updates, and returns the next
     planned [action] for [enemy] using [rng]. *)
-let choose_next_intent = failwith "Unimplemented"
+let choose_next_intent rng e =
+  let roll = Random.State.int rng 10 in
+  let next_intent =
+    if roll < 6 then Attack e.atk
+    else if roll < 9 then Defend e.def
+    else Pass
+  in
+  e.intent <- next_intent;
+  next_intent
 
 (** [intent_to_string enemy] is a human-readable description of [enemy]'s
     current planned action (e.g., ["Will deal 12 damage"]). *)
@@ -152,8 +163,16 @@ let intent_to_string e =
 
 (** [scale_turn turn enemy] scales [enemy]'s stats (such as attack damage) based
     on the current combat [turn] number. *)
-let scale_turn = failwith "Unimplemented"
+let scale_turn turn e =
+  if turn > 1 then
+    let scaled_atk = int_of_float (medium_s *.* e.atk) in
+    e.atk <- max (e.atk + 1) scaled_atk
 
 (** [get_gold_drop rng enemy] is the amount of gold dropped when [enemy] is
     defeated. *)
-let get_gold_drop = failwith "Unimplemented"
+let get_gold_drop rng e =
+  if e.gold_drop <= 0 then 0
+  else
+    let spread = max 1 (e.gold_drop / 4) in
+    let offset = Random.State.int rng ((2 * spread) + 1) - spread in
+    max 1 (e.gold_drop + offset)
