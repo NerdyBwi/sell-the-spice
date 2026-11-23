@@ -45,9 +45,16 @@ let string_of_keyword = function
 
 (** [print_card index card] displays a card's index, name, cost, and effect. *)
 let print_card index card =
-  let keyword, amount = Cards.get_card_effect card in
+  (* temporary implementation that ignores all effects after the first one *)
+  let effects = Cards.get_card_effect card in
+
+  let keyword, amount =
+    match effects with
+    | [] -> failwith "Unimplemented multiple effects exception"
+    | h :: t -> h
+  in
   Printf.printf "%d. %s (Cost: %d) - %s %d\n" index (Cards.get_card_name card)
-    (Cards.get_card_cost card)
+    (Cards.get_card_energy card)
     (string_of_keyword keyword)
     amount
 

@@ -20,7 +20,7 @@ let print_error = function
   | Ok () -> ()
   | Error e -> print_endline e
 
-let demo_card = Cards.generate_card "common"
+let demo_card = Cards.(generate_card Common rng)
 
 let build_jim () =
   let jim = P.init_player "jim" 100 2 25 15 5 in

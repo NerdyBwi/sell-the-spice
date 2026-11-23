@@ -1,108 +1,93 @@
 open OUnit2
 open SpiceLib
-module C = Combat
-module E = Enemies
-module P = Player
-module G = Goods
 
-let d = false
-(* debug switch*)
+let make_rng () = Random.State.make [| 42 |]
+let make_player () = Player.init_player "Test Player" 100 10 50 10 10
+let make_enemy () = Enemies.make_enemy "Goblin" 30 5 10 6
 
-(** debug point *)
-let dbp s = if d then print_endline (Printf.sprintf "Debugging: %s" s)
+let get_enemy state =
+  match Combat.get_enemies state with
+  | [] -> assert_failure "No enemies"
+  | h :: t -> h
 
-let seed = 1
-let rng = Random.State.make [| seed |]
-(* ===========================================================================
-   Testing Helper Functions
-   =========================================================================== *)
+let test_init_combat _ =
+  let player = make_player () in
+  let enemy = make_enemy () in
+  let combat = Combat.init_combat (make_rng ()) player [ enemy ] in
+  assert_equal "Test Player" (Player.get_name (Combat.get_player combat));
+  assert_equal "Goblin" (Enemies.get_name (get_enemy combat));
+  assert_bool "Combat should not initially be over"
+    (not (Combat.is_over combat))
 
-(**[assert_equal_int expected actual] *)
-let assert_equal_int x y = assert_equal ~printer:(fun i -> string_of_int i) x y
+let test_get_player _ =
+  let player = make_player () in
+  let combat = Combat.init_combat (make_rng ()) player [ make_enemy () ] in
+  let returned_player = Combat.get_player combat in
+  assert_equal (Player.get_hp player) (Player.get_hp returned_player);
+  assert_equal (Player.get_atk player) (Player.get_atk returned_player);
+  assert_equal (Player.get_gold player) (Player.get_gold returned_player)
 
-let is_ok v =
-  match v with
-  | Ok _ -> ()
-  | Error e -> assert_failure e
+let test_get_enemy _ =
+  let enemy = make_enemy () in
+  let combat = Combat.init_combat (make_rng ()) (make_player ()) [ enemy ] in
+  let returned_enemy = get_enemy combat in
+  assert_equal (Enemies.get_name enemy) (Enemies.get_name returned_enemy);
+  assert_equal (Enemies.get_hp enemy) (Enemies.get_hp returned_enemy);
+  assert_equal (Enemies.get_atk enemy) (Enemies.get_atk returned_enemy)
 
-let not_is_ok v =
-  match v with
-  | Ok _ -> assert_failure "expected error"
-  | Error e -> ()
-
-let demo_card = Cards.generate_card "common"
-
-let build_jim () =
-  let jim = P.init_player "jim" 100 50 25 15 5 in
-  is_ok (P.add_card demo_card jim);
-  is_ok (P.add_card demo_card jim);
-  is_ok (P.add_card demo_card jim);
-  jim
-
-let build_tom () = E.make_enemy "tom" 10 9 8 7
-
-let combat_print_demo c =
-  let p = C.get_player c in
-  let p_name, p_atk, p_hp, p_mhp, p_gd, p_b =
-    P.(get_name p, get_atk p, get_hp p, get_max_hp p, get_gold p, C.get_block c)
+let test_get_hand _ =
+  let combat =
+    Combat.init_combat (make_rng ()) (make_player ()) [ make_enemy () ]
   in
-  let es = C.get_enemies c in
-  let e =
-    match es with
-    | [] -> failwith "how are there no enemies in here bruh"
-    | h :: t -> h
+  let hand = Combat.get_hand combat in
+  assert_bool "Hand should be a list" (List.length hand >= 0)
+
+let test_combat_ends_when_enemy_dies _ =
+  let enemy = make_enemy () in
+  let combat = Combat.init_combat (make_rng ()) (make_player ()) [ enemy ] in
+  ignore (Enemies.add_hp (-100) enemy);
+  assert_bool "Combat should be over when the enemy is defeated"
+    (Combat.is_over combat)
+
+let test_combat_ends_when_player_dies _ =
+  let player = make_player () in
+  let combat = Combat.init_combat (make_rng ()) player [ make_enemy () ] in
+  ignore (Player.add_hp (-100) player);
+  assert_bool "Combat should be over when the player is defeated"
+    (Combat.is_over combat)
+
+let test_end_turn _ =
+  let combat =
+    Combat.init_combat (make_rng ()) (make_player ()) [ make_enemy () ]
   in
-  let e_name, e_atk, e_hp, e_mhp, e_gd, e_b =
-    E.
-      ( get_name e,
-        get_atk e,
-        get_hp e,
-        get_max_hp e,
-        get_gold_drop rng e,
-        get_block e )
-  in
-  let h, i_played, turn = (C.get_hand c, C.get_cards_played c, C.get_turn c) in
-  let lester =
-    Printf.sprintf
-      "Player: %s\n\
-      \ ATK: %d | HP: %d/%d | BLOCK: %d | GLD: %d\n\n\
-       Enemy: %s\n\
-       ATK:%d | HP: %d/%d | BLOCK: %d | GLD: %d\n\
-       Intent: %s\n\n\
-       Turn:%d | Cards Played: %d\n\n\
-      \ Your current cards:\n\
-       %s"
-      p_name p_atk p_hp p_mhp p_b p_gd e_name e_atk e_hp e_mhp e_b e_gd
-      (E.intent_to_string e) turn i_played
-      (List.fold_right (fun c acc -> Cards.get_card_name c ^ "\n" ^ acc) h "")
-  in
-  print_endline lester
+  Combat.end_turn (make_rng ()) combat;
+  assert_bool "Combat should still be active with living player and enemy"
+    (not (Combat.is_over combat))
 
-(* ===========================================================================
-   Tests
-   =========================================================================== *)
+let test_play_card _ =
+  let rng = make_rng () in
+  let player = make_player () in
+  let card = Cards.generate_card Cards.Common rng in
+  let () = Result.get_ok (Player.add_card card player) in
+  let combat = Combat.init_combat rng player [ make_enemy () ] in
+  let result = Combat.play_card 1 combat in
+  match result with
+  | Ok () ->
+      assert_bool "Combat should remain active" (not (Combat.is_over combat))
+  | Error message ->
+      assert_bool "Error message should not be empty" (String.length message > 0)
 
-let init_combat_demo () =
-  let player = build_jim () in
-  let enemies = [ build_tom () ] in
-  let combat_state = C.init_combat rng player enemies in
-  while not (C.is_over combat_state) do
-    print_endline "waiting on an input: ";
-    let input = read_line () |> int_of_string_opt in
-    C.run_combat rng combat_state input;
-    combat_print_demo combat_state
-  done;
-  print_endline "Combat Over"
+let suite =
+  "combat tests"
+  >::: [
+         "initialize combat" >:: test_init_combat;
+         "get player" >:: test_get_player;
+         "get enemy" >:: test_get_enemy;
+         "get hand" >:: test_get_hand;
+         "combat ends when enemy dies" >:: test_combat_ends_when_enemy_dies;
+         "combat ends when player dies" >:: test_combat_ends_when_player_dies;
+         "end turn" >:: test_end_turn;
+         "play card" >:: test_play_card;
+       ]
 
-(* ===========================================================================
-   Running Tests
-   =========================================================================== *)
-let tests =
-  "Test suite for combat module tests"
-  >::: [ ("Test 1" >:: fun _ -> ()); ("Test 2" >:: fun _ -> ()) ]
-;;
-
-if d then print_endline "Running test_player_functions";;
-
-let () = init_combat_demo ()
-(* let _ = run_test_tt_main tests *)
+let () = run_test_tt_main suite

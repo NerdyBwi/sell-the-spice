@@ -24,8 +24,8 @@ let display_stats player =
   Display.print_player_stats player (goods_value player)
 
 (** [add_starting_cards player] adds ten starting cards to [player]'s deck. *)
-let add_starting_cards player =
-  let card = Cards.generate_card "common" in
+let add_starting_cards player rng =
+  let card = Cards.(generate_card Common rng) in
   for _ = 1 to 10 do
     match Player.add_card card player with
     | Ok () -> ()
@@ -152,7 +152,7 @@ let start_game seed name =
   let rng = Random.State.make [| seed |] in
   Display.print_banner ();
   let player = Player.init_player name 100 15 100 10 10 in
-  add_starting_cards player;
+  add_starting_cards player rng;
   display_stats player;
   let player_after_shop = run_shop rng "STARTING SHOP" player in
   let state_after_shop = { stage = 1; player = player_after_shop; rng } in

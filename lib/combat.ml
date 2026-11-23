@@ -163,7 +163,13 @@ let execute_enemy_turn enemy state =
     turn. Returns an Error if the card cannot be played. *)
 let use_card (c : Cards.t) (s : t) =
   let open Cards in
-  let keyword, value = get_card_effect c in
+  let effects = get_card_effect c in
+  (* temporary implementation will only trigger the first effect listed: *)
+  let keyword, value =
+    match effects with
+    | [] -> failwith "Unimplemented exception: no effects"
+    | h :: t -> h
+  in
   match keyword with
   | Attack -> (
       match find_enemy s.enemies with

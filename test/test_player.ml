@@ -305,7 +305,8 @@ let size_tests =
       assert_equal ~printer:pint 5 (Player.get_deck_size p) );
     ( "shuffling an empty deck is Ok" >:: fun _ ->
       let p = fresh () in
-      ok (Player.shuffle_deck (Random.State.make [| 1 |]) p) );
+      ok (Player.shuffle_deck (Random.State.make [| 1 |]) (Player.get_deck p))
+    );
   ]
 
 (* ---------- Link to Goods scoring ---------- *)
