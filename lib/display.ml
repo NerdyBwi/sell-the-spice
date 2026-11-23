@@ -14,11 +14,54 @@ let print_stage stage total =
 
 (** [print_player_stats player goods_value] displays player statistics. *)
 let print_player_stats player goods_value =
-  Printf.printf "\nHealth: %d/%d\n" (Player.get_hp player)
+  Printf.printf "\nMerchant: %s\n" (Player.get_name player);
+  Printf.printf "Health: %d/%d\n" (Player.get_hp player)
     (Player.get_max_hp player);
   Printf.printf "Damage: %d\n" (Player.get_atk player);
   Printf.printf "Gold: %d\n" (Player.get_gold player);
   Printf.printf "Goods value: %d\n" goods_value
+
+(** [print_enemy enemy] displays the enemy's current statistics and intent. *)
+let print_enemy enemy =
+  Printf.printf "\nEnemy: %s\n" (Enemies.get_name enemy);
+  Printf.printf "Health: %d/%d\n" (Enemies.get_hp enemy)
+    (Enemies.get_max_hp enemy);
+  Printf.printf "Damage: %d\n" (Enemies.get_atk enemy);
+  Printf.printf "Block: %d\n" (Enemies.get_block enemy);
+  Printf.printf "Intent: %s\n" (Enemies.intent_to_string enemy)
+
+(** [string_of_keyword keyword] returns a readable name for a card keyword. *)
+let string_of_keyword = function
+  | Cards.Attack -> "Attack"
+  | Cards.Defend -> "Defend"
+  | Cards.Heal -> "Heal"
+  | Cards.Draw -> "Draw"
+  | Cards.Buff -> "Buff"
+
+(** [print_card index card] displays a card's index, name, cost, and effect. *)
+let print_card index card =
+  let keyword, amount = Cards.get_card_effect card in
+  Printf.printf "%d. %s (Cost: %d) - %s %d\n" index (Cards.get_card_name card)
+    (Cards.get_card_cost card)
+    (string_of_keyword keyword)
+    amount
+
+(** [print_hand hand] displays the cards currently available to the player. *)
+let print_hand hand =
+  print_endline "\nYour current cards:";
+  match hand with
+  | [] -> print_endline "No cards in hand."
+  | cards -> List.iteri (fun i card -> print_card (i + 1) card) cards
+
+(** [print_combat combat] displays the player, enemy, and current hand from the
+    supplied combat state. *)
+let print_combat combat =
+  let player = Combat.get_player combat in
+  let enemy = Combat.get_enemy combat in
+  print_section "COMBAT STATUS";
+  print_player_stats player (Goods.inventory_value (Player.get_goods player));
+  print_enemy enemy;
+  print_hand (Combat.get_hand combat)
 
 (** [print_reward amount] displays a gold reward. *)
 let print_reward amount = Printf.printf "\nYou earned %d gold!\n" amount
@@ -26,17 +69,16 @@ let print_reward amount = Printf.printf "\nYou earned %d gold!\n" amount
 (** [print_message message] displays a general message. *)
 let print_message message = print_endline message
 
-(** [print_selling_phase goods_value] displays the selling summary. *)
+(** [print_selling_phase goods_value] displays the value of the goods held. *)
 let print_selling_phase goods_value =
   print_section "FINAL SELLING PHASE";
   Printf.printf "Your goods are worth %d gold.\n" goods_value;
-  Printf.printf "Goods sold for %d gold!\n" goods_value
+  print_endline "Goods have not been sold."
 
 (** [print_final_report player score] displays the final report. *)
 let print_final_report player score =
   print_section "FINAL REPORT";
-  if Player.check_alive player then
-    print_endline "Congratulations! You completed the game!"
+  if Player.check_alive player then print_endline "The demo is complete!"
   else print_endline "You were defeated!";
   Printf.printf "\nFinal health: %d/%d\n" (Player.get_hp player)
     (Player.get_max_hp player);
@@ -48,30 +90,3 @@ let print_final_report player score =
 
 (** [print_goodbye ()] displays the closing message. *)
 let print_goodbye () = print_endline "\nThanks for playing Sell the Spice!"
-
-(** [print_combat combat] displays the player, enemy, and cards currently in the
-    player's hand. *)
-let print_combat combat =
-  let player = Combat.get_player combat in
-  let enemy = Combat.get_enemy combat in
-  let hand = Combat.get_hand combat in
-  print_section "COMBAT";
-  Printf.printf "Player: %s\n" (Player.get_name player);
-  Printf.printf "Health: %d/%d\n" (Player.get_hp player)
-    (Player.get_max_hp player);
-  Printf.printf "Damage: %d\n" (Player.get_atk player);
-  Printf.printf "Gold: %d\n" (Player.get_gold player);
-  Printf.printf "\nEnemy: %s\n" (Enemies.get_name enemy);
-  Printf.printf "Enemy health: %d/%d\n" (Enemies.get_hp enemy)
-    (Enemies.get_max_hp enemy);
-  Printf.printf "Enemy damage: %d\n" (Enemies.get_atk enemy);
-  Printf.printf "Enemy intent: %s\n" (Enemies.intent_to_string enemy);
-  print_endline "\nYour hand:";
-  match hand with
-  | [] -> print_endline "No cards in hand."
-  | cards ->
-      List.iter
-        (fun card ->
-          Printf.printf "- %s (Cost: %d)\n" (Cards.get_card_name card)
-            (Cards.get_card_cost card))
-        cards
