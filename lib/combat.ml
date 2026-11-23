@@ -37,7 +37,7 @@ let ( **. ) i f = float_of_int i *. f
 (** Retrieves the player in the combat encounter. *)
 let get_player s = s.player
 
-(** Retrieves the enemy in the combat encounter. *)
+(** Retrieves the enemies in the combat encounter. *)
 let get_enemies s = s.enemies
 
 (** [get_block state] retrieves the player's current temporary block. *)
@@ -80,7 +80,7 @@ let draw_hand rng state =
     (* Recursive helper method for drawing cards. [acc] is the accumulator list,
        [loc] is the current position in the array, [counter] is current the
        number of cards drawn *)
-    if counter >= max_cards_drawn_per_turn || loc > size then (acc, loc)
+    if counter >= max_cards_drawn_per_turn || loc >= size then (acc, loc)
     else
       let acc' = draw_deck.(loc) :: acc in
       construct_hand acc' (loc + 1) (counter + 1)
@@ -192,7 +192,7 @@ let play_card (i : int) (s : t) =
            increments the index. *)
         let held, temp_hand, loc = acc in
         if i = loc then (* is the target card *)
-          (Some card, temp_hand, loc)
+          (Some card, temp_hand, loc + 1)
         else (* not the target card *)
           (held, card :: temp_hand, loc + 1)
       in
@@ -215,42 +215,44 @@ let play_card (i : int) (s : t) =
 (** [end_turn rng state] ends the player's turn and executes the enemies' turn.
 *)
 let end_turn (rng : Random.State.t) (state : t) =
-  if not (is_over state) then begin
-    (* draws a new hand at the end of the player's turn *)
+  (* draws a new hand at the end of the player's turn *)
+  if (not (Player.check_alive state.player)) || find_enemy state.enemies = None
+  then state.status <- Finished
+  else begin
     draw_hand rng state;
     List.iter (fun enemy -> execute_enemy_turn enemy state) state.enemies;
-    if
-      (not (Player.check_alive state.player)) || find_enemy state.enemies = None
-    then state.status <- Finished
-    else begin
-      state.block <- 0;
-      state.cards_played <- 0;
-      state.turn <- state.turn + 1;
-      List.iter
-        (fun enemy ->
-          if Enemies.check_alive enemy then begin
-            Enemies.scale_turn state.turn enemy;
-            ignore (Enemies.choose_next_intent rng enemy)
-          end)
-        state.enemies
-    end
+    state.block <- 0;
+    state.cards_played <- 0;
+    state.turn <- state.turn + 1;
+    List.iter
+      (fun enemy ->
+        if Enemies.check_alive enemy then begin
+          Enemies.scale_turn state.turn enemy;
+          ignore (Enemies.choose_next_intent rng enemy)
+        end)
+      state.enemies
   end
 
 (** [run_combat rng state input] advances the combat phase by modifying [state]
     when given an [input] action. [None] inputs are needed to initiate enemy
     turns or something. *)
 let run_combat (rng : Random.State.t) (state : t) (input_opt : int option) =
-  if not (is_over state) then begin
-    let played_count = get_cards_played state in
-    if played_count >= max_cards_per_turn || List.length state.hand <= 0 then
-      end_turn rng state
-    else (* it is the player's turn. *)
-      match input_opt with
-      | None ->
-          (*probably an invalid input, we'll just ignore it and do nothing*)
-          ()
-      | Some input -> (
-          match play_card input state with
-          | Error _ -> () (* does nothing *)
-          | Ok () -> state.cards_played <- played_count + 1)
-  end
+  let played_count = get_cards_played state in
+  let end_turn_condition =
+    played_count >= max_cards_per_turn
+    || List.length state.hand <= 0
+    || find_enemy state.enemies = None
+    || is_over state (* this condition is probably never met... *)
+  in
+  if end_turn_condition then (* an end turn condition has been met *)
+    end_turn rng state
+  else (* it is the player's turn. *)
+    match input_opt with
+    | None ->
+        (*probably an invalid input, we'll just ignore it and do nothing*)
+        ()
+    | Some input -> (
+        (*note: we do input - 1 because humans start counting at 1, not 0*)
+        match play_card (input - 1) state with
+        | Error _ -> () (* does nothing *)
+        | Ok () -> state.cards_played <- played_count + 1)

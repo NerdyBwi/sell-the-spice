@@ -5,13 +5,16 @@ type keyword =
   | Draw
   | Buff
 
-type t = unit
+type t = {
+  name : string;
+  ef : keyword * int;
+  cost : int;
+}
 
-(** takes in a card rarity (common, uncommon, rare) and generates a
-    corresponding card*)
-let generate_card = failwith "Unimplemented"
+(** this is a temporary implementation and does not reflect the final build in
+    any meaningful way. *)
+let generate_card s = { name = "test123"; ef = (Attack, 1); cost = 1 }
 
-let get_card_name = failwith "Unimplmented"
-let get_card = failwith "Unimplemented"
-let get_card_effect = failwith "Unimplemented"
-let get_card_cost = failwith "Unimplemented"
+let get_card_name c = c.name
+let get_card_effect c = c.ef
+let get_card_cost c = c.cost

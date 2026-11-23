@@ -136,17 +136,6 @@ let get_deck player =
 (** Retrieves the max size of the deck of cards in the player's inventory. *)
 let get_deck_size player = Array.length player.deck
 
-let deck_modifier_helper card (modify_value : Cards.t option) player e_msg =
-  let deck = player.deck in
-  deck
-  |> Array.find_index (fun x ->
-      match x with
-      | Some thing when thing = card -> true
-      | _ -> false)
-  |> function
-  | None -> Error e_msg
-  | Some i -> Ok (deck.(i) <- modify_value)
-
 (** Error string given when a good cannot be found in the inventory*)
 let error_str_unfound_card_remove =
   "Attempted to remove a card from the deck; failed due to card not found."
@@ -159,15 +148,21 @@ let error_str_no_card_slots =
 let error_str_excess_deck_size_remove =
   "Attempted to remove deck size; failed due to too few resultant slots."
 
+let deck_modifier_helper target modify_value player e_msg =
+  let deck = player.deck in
+  deck |> Array.find_index (fun x -> x = target) |> function
+  | None -> Error e_msg
+  | Some i -> Ok (deck.(i) <- modify_value)
+
 (** [add_card card count player] adds that number of cards to a player's deck.
     Returns an Error if the player has no more deck slots. *)
 let add_card card player =
-  deck_modifier_helper card (Some card) player error_str_no_card_slots
+  deck_modifier_helper None (Some card) player error_str_no_card_slots
 
 (** [remove_card card player] removes that card from the player's deck. Returns
     an Error if the deck does not contain that card. *)
 let remove_card card player =
-  deck_modifier_helper card None player error_str_no_card_slots
+  deck_modifier_helper (Some card) None player error_str_no_card_slots
 
 (**[shuffle_deck rand_state deck] takes a random state and shuffles a deck of
    cards. *)
