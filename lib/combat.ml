@@ -233,18 +233,23 @@ let end_turn (rng : Random.State.t) (state : t) =
       state.enemies
   end
 
+(**Helper function that checks if any end turn conditions have been met.
+   Specifically checks if a hand has no cards left, if there any valid enemies
+   remaining, or if the game is over.
+
+   Does not check if the number of cards played has reached the maximum. *)
+let end_turn_condition state =
+  List.length (get_hand state) <= 0
+  || find_enemy (get_enemies state) = None
+  || is_over state (* this condition is probably never met... *)
+
 (** [run_combat rng state input] advances the combat phase by modifying [state]
     when given an [input] action. [None] inputs are needed to initiate enemy
     turns or something. *)
 let run_combat (rng : Random.State.t) (state : t) (input_opt : int option) =
-  let played_count = get_cards_played state in
-  let end_turn_condition =
-    played_count >= max_cards_per_turn
-    || List.length state.hand <= 0
-    || find_enemy state.enemies = None
-    || is_over state (* this condition is probably never met... *)
-  in
-  if end_turn_condition then (* an end turn condition has been met *)
+  if get_cards_played state >= max_cards_per_turn || end_turn_condition state
+  then
+    (* an end turn condition has been met *)
     end_turn rng state
   else (* it is the player's turn. *)
     match input_opt with
@@ -255,4 +260,7 @@ let run_combat (rng : Random.State.t) (state : t) (input_opt : int option) =
         (*note: we do input - 1 because humans start counting at 1, not 0*)
         match play_card (input - 1) state with
         | Error _ -> () (* does nothing *)
-        | Ok () -> state.cards_played <- played_count + 1)
+        | Ok () ->
+            state.cards_played <- state.cards_played + 1;
+            if end_turn_condition state then (* recheck end cond. *)
+              end_turn rng state)

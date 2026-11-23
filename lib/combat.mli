@@ -35,6 +35,9 @@ val get_turn : t -> int
 val get_cards_played : t -> int
 (** Retrieves how many cards have been played on the current turn. *)
 
+val max_cards_per_turn : int
+(** Retrieves how many cards can been played in any turn. *)
+
 val is_over : t -> bool
 (** [is_over state] checks if the combat encounter has ended. *)
 
