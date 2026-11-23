@@ -57,8 +57,7 @@ let () =
     let seed = get_seed () in
     let name = get_name () in
     Printf.printf "Welcome, %s! Using random seed: %d\n" name seed;
-    (* TODO: pass [name] once Game.start_game accepts it (agree with Anish). *)
-    Game.start_game seed
+    Game.start_game seed name
   with
   | End_of_file -> print_endline "\nInput ended. Exiting game."
   | error ->
