@@ -16,14 +16,14 @@ type action =
    Construction functions
    ============================================================================ *)
 
-val init_enemy : Random.State.t -> int -> t
-(** [init_enemy rng round] chooses one kind of enemy randomly using [rng] and
+val init_enemies : Random.State.t -> int -> t list
+(** [init_enemies rng round] chooses one kind of enemy randomly using [rng] and
     initializes its stats scaled by [round]. *)
 
-val make_enemy : string -> int -> int -> int -> t
-(** [make_enemy name hp atk gold_drop] creates a custom enemy with [name],
-    starting [hp], base [atk], and base [gold_drop] for deterministic testing.
-*)
+val make_enemy : string -> int -> int -> int -> int -> t
+(** [make_enemy name hp atk def gold_drop scale] creates a custom enemy with
+    [name], starting [hp], base [atk], base [defense], base [gold_drop], and a
+    [scale] factor for deterministic testing. *)
 
 (* ============================================================================
    State functions
@@ -55,7 +55,7 @@ val add_hp : int -> t -> (unit, string) result
 (** [add_hp delta enemy] adds [delta] (positive for healing, negative for
     damage) to [enemy]'s HP. Returns [Error msg] if [enemy] is not alive. *)
 
-val add_atk : int -> t -> unit
+val add_atk : int -> t -> (unit, string) result
 (** [add_atk delta enemy] modifies [enemy]'s attack stat by [delta]. *)
 
 val set_block : int -> t -> unit

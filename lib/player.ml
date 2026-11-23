@@ -136,17 +136,6 @@ let get_deck player =
 (** Retrieves the max size of the deck of cards in the player's inventory. *)
 let get_deck_size player = Array.length player.deck
 
-let deck_modifier_helper card (modify_value : Cards.t option) player e_msg =
-  let deck = player.deck in
-  deck
-  |> Array.find_index (fun x ->
-      match x with
-      | Some thing when thing = card -> true
-      | _ -> false)
-  |> function
-  | None -> Error e_msg
-  | Some i -> Ok (deck.(i) <- modify_value)
-
 (** Error string given when a good cannot be found in the inventory*)
 let error_str_unfound_card_remove =
   "Attempted to remove a card from the deck; failed due to card not found."
@@ -159,20 +148,26 @@ let error_str_no_card_slots =
 let error_str_excess_deck_size_remove =
   "Attempted to remove deck size; failed due to too few resultant slots."
 
+let deck_modifier_helper target modify_value player e_msg =
+  let deck = player.deck in
+  deck |> Array.find_index (fun x -> x = target) |> function
+  | None -> Error e_msg
+  | Some i -> Ok (deck.(i) <- modify_value)
+
 (** [add_card card count player] adds that number of cards to a player's deck.
     Returns an Error if the player has no more deck slots. *)
 let add_card card player =
-  deck_modifier_helper card (Some card) player error_str_no_card_slots
+  deck_modifier_helper None (Some card) player error_str_no_card_slots
 
 (** [remove_card card player] removes that card from the player's deck. Returns
     an Error if the deck does not contain that card. *)
 let remove_card card player =
-  deck_modifier_helper card None player error_str_no_card_slots
+  deck_modifier_helper (Some card) None player error_str_no_card_slots
 
-(**[shuffle_deck rand_state player] takes a random state and shuffles the
-   player's deck of cards. *)
-let shuffle_deck rand_state player =
-  Ok (Array.shuffle ~rand:(Random.State.int rand_state) player.deck)
+(**[shuffle_deck rand_state deck] takes a random state and shuffles a deck of
+   cards. *)
+let shuffle_deck rand_state deck =
+  Ok (Array.shuffle ~rand:(Random.State.int rand_state) deck)
 
 (** [add_deck_size num player] adds [num] deck slots to the player's deck. Works
     with negative integers. Does not allow for a modification that would result
@@ -296,9 +291,9 @@ let remove_good_amount good count player =
     | None -> Error error_str_unfound_good_remove
 
 (** [remove_good good player] removes all of the goods from the player's
-    inventory with that associated name. Returns the number of goods removed
-    from the player if successful. Returns an error if the good cannot be found.
-*)
+    inventory with that associated name. Does not modify the player's stats.
+    Returns the number of goods removed from the player if successful. Returns
+    an error if the good cannot be found. *)
 let remove_good good player =
   let inventory = player.goods in
   inventory
@@ -326,10 +321,10 @@ let sell_good_amount good sell_mod count player =
       in
       add_gold gold_increase player
 
-(** [remove_good good player] removes all of the goods from the player's
-    inventory with that associated name. Modifies the player's gold count based
-    on the [sell_multiplier] and good [price]. Does not modify the player's
-    other stats. Returns an error if the good cannot be found. *)
+(** [sell_good good player] sells all of the goods from the player's inventory
+    with that associated name. Modifies the player's gold count based on the
+    [sell_multiplier] and good [price]. Does not modify the player's other
+    stats. Returns an error if the good cannot be found. *)
 let sell_good good sell_mod player =
   match remove_good good player with
   | Error e -> Error e

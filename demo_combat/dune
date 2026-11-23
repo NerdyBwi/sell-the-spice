@@ -1,0 +1,4 @@
+(executable
+ (public_name demo_combat)
+ (name demo_combat)
+ (libraries SpiceLib))
