@@ -30,6 +30,11 @@ let print_enemy enemy =
   Printf.printf "Block: %d\n" (Enemies.get_block enemy);
   Printf.printf "Intent: %s\n" (Enemies.intent_to_string enemy)
 
+(** [print_enemy_defeated enemy] displays a message when the enemy is defeated.
+*)
+let print_enemy_defeated enemy =
+  Printf.printf "\n%s has been defeated! (0 HP)\n" (Enemies.get_name enemy)
+
 (** [string_of_keyword keyword] returns a readable name for a card keyword. *)
 let string_of_keyword = function
   | Cards.Attack -> "Attack"
