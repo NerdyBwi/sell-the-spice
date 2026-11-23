@@ -1,3 +1,8 @@
 (tests
- (names test_player_functions test_goods test_combat)
+ (names
+  test_player_functions
+  test_goods
+  test_player
+  test_enemies
+  test_combat)
  (libraries SpiceLib ounit2))

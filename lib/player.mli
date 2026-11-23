@@ -147,6 +147,27 @@ val sell_good : Goods.t -> float -> t -> (unit, string) result
 
     If the good was not found, returns [Error error_str_unfound_good_remove].*)
 
+val sell_good_amount : Goods.t -> float -> int -> t -> (unit, string) result
+(** [sell_good_amount good sell_multiplier count player] sells a number of goods
+    from a player's inventory. Modifies the player's gold count based on the
+    sell_multiplier and good price. Does not modify the player's other stats.
+
+    If the count is negative, returns
+    [Error error_str_negative_good_remove_count].
+
+    If the good was not found, returns [Error error_str_unfound_good_remove].
+
+    If the count exceeds the held amount, returns
+    [Error error_str_excess_good_remove]*)
+
+val sell_good : Goods.t -> float -> t -> (unit, string) result
+(** [sell_good good player] sells all of the goods from the player's inventory
+    with that associated name. Modifies the player's gold count based on the
+    [sell_multiplier] and good [price]. Does not modify the player's other
+    stats.
+
+    If the good was not found, returns [Error error_str_unfound_good_remove].*)
+
 val add_good_size : int -> t -> (unit, string) result
 (** [add_good_size num player] adds [num] inventory slots to the player's goods
     inventory. Works with negative integers. Does not allow for a modification
