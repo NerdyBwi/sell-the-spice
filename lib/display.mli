@@ -13,6 +13,10 @@ val print_player_stats : Player.t -> int -> unit
 val print_enemy : Enemies.t -> unit
 (** [print_enemy enemy] displays the enemy's current statistics and intent. *)
 
+val print_enemy_defeated : Enemies.t -> unit
+(** [print_enemy_defeated enemy] displays a message when the enemy is defeated.
+*)
+
 val print_hand : Cards.t list -> unit
 (** [print_hand hand] displays the cards currently available to the player. *)
 
