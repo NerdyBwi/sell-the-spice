@@ -1,12 +1,102 @@
-type t = unit
-(** Shop type, contains an array of items*)
+type item = 
+| Cards of Cards.t
+| Goods of Goods.t
+(** Variant of cards/goods/anything else in shop*)
 
-type item
-(** Record containing the type (Variant of cards/goods/anything else in shop)
-    and its associated price*)
+type slot =
+{
+    item : item;
+    buy_price : int;
+    sell_price : int;
+}
+
+type transaction_result =
+| Complete
+| Empty_slot
+| Not_enough_gold
+| Not_enough_good
+| Not_sellable
+
+type t = slot option array
+(** Shop type, contains an array of item/price tuple*)
+
+
+let create_slot slot_item buy sell = Some
+{item = slot_item; buy_price = buy ; sell_price = sell}
 
 (** Takes in rng seed to generate shop *)
-let init_shop = failwith "Unimplemented"
+let init_shop seed = 
+let card1 = create_slot (Cards (Cards.generate_card Card.Common seed)) 10 0 in
+let card2 = create_slot (Cards (Cards.generate_card Card.Uncommon seed)) 20 0 in
+let card3 = create_slot (Cards (Cards.generate_card Card.Rare seed)) 30 0 in
+let goods_list = Goods.random_selection seed 3 in
+
+let convert_goods = List.map (fun good -> 
+create_slot (Goods good) (Goods.price good) (Goods.value good)) goods_list in
+
+let shop_list = (card1 :: card2 :: card3) @ convert_goods in
+
+Array.of_list shop_list
+
+
+
+let get_buy_price shop index = 
+if index < 0 || index >= Array.length shop then 
+invalid_arg "Index is out of bounds"
+else 
+match shop.(index) with
+| Some slot -> Some slot.buy_price
+| None -> None
+
+
+let get_sell_price shop index =
+if index < 0 || index >= Array.length shop then 
+invalid_arg "Index is out of bounds"
+else 
+match shop.(index) with
+| Some slot -> Some slot.sell_price
+| None -> None
+
+let remove_item shop index=
+if index < 0 ||index >= Array.length shop then 
+invalid_arg "Index is out of bounds"
+else 
+shop.(index) <- None
+
 
 (** Takes in index of item and shop and returns *)
-let purchase_item = failwith "Unimplemented"
+let purchase_item shop index player = 
+if index < 0 ||index >= Array.length shop then
+invalid_arg "Index is out of bounds"
+else (
+let item = shop.(index) in
+match item with
+| None -> Empty_slot
+| Some slot -> let item_type = slot.item in
+let cost = slot.buy_price in
+let funds = Player.get_gold player in
+if cost > funds then Not_enough_gold else (
+Player.add_gold (-cost) player;
+match item_type with 
+| Cards card -> remove_item shop index;
+Player.add_card card player; Complete
+| Goods good -> Player.add_good good 1 player;
+Complete
+)
+)
+
+
+let sell_goods shop index player =
+if index < 0 ||index >= Array.length shop then
+invalid_arg "Index is out of bounds"
+else 
+let item = shop.(index) in
+match item with
+| None -> Empty_slot
+| Some slot -> let item_type = slot.item in
+match item_type with 
+| Cards _ -> Not_sellable
+| Goods good -> match Player.remove_good_amount good 1 player with
+    | Error _ -> Not_enough_good
+    | Ok () -> Player.add_gold slot.sell_price player;
+    Complete
