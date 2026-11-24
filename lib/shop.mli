@@ -46,7 +46,7 @@ val get_sell_price : t -> int -> int option
 val get_item_name : t -> int -> string
 (** Takes in shop and index of item and returns the name of the item *)
 
-val get_all_data : t -> (string*int*int)
+val get_all_data : t -> (string * int * int) list
 (** Takes in a shop object and return a list of tuples containing 
 the names and buy/sell information of everything in the shop*)
 
