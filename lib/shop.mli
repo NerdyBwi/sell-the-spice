@@ -40,6 +40,10 @@ val get_buy_price : t -> int -> int option
 val get_sell_price : t -> int -> int option
 (** Takes in shop and index of item and returns sell price*)
 
+val get_item_name : t -> int -> string
+
+val get_all_data : t -> (item*int*int)
+
 val purchase_item : t -> int -> Player.t -> transaction_result
 (** Takes in index of item and shop and returns the result of the attempted
     purchase of the item*)
