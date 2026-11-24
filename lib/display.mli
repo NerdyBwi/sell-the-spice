@@ -20,6 +20,16 @@ val print_enemy_defeated : Enemies.t -> unit
 val print_hand : Cards.t list -> unit
 (** [print_hand hand] displays the cards currently available to the player. *)
 
+val print_card_details : Cards.t -> unit
+(** [print_card_details card] displays the full details of a selected card. *)
+
+val print_shop : Player.t -> (string * int * int) list -> unit
+(** [print_shop player items] displays available shop items and their buying and
+    selling prices. *)
+
+val print_shop_inventory : Player.t -> unit
+(** [print_shop_inventory player] displays the player's cards and goods. *)
+
 val print_combat_status :
   Player.t -> Enemies.t list -> Cards.t list -> int -> int -> int -> unit
 (** [print_combat_status player enemies hand goods_value cards_played
