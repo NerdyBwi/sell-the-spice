@@ -26,7 +26,7 @@ let display_stats player =
 (** [add_starting_cards player] adds ten starting cards to [player]'s deck. *)
 let add_starting_cards player rng =
   let card = Cards.(generate_card Common rng) in
-  for _ = 1 to 10 do
+  for _ = 1 to 7 do
     match Player.add_card card player with
     | Ok () -> ()
     | Error message -> failwith message
