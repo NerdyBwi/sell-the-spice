@@ -68,6 +68,26 @@ let get_sell_price shop index =
     | Some slot -> Some slot.sell_price
     | None -> None
 
+let get_item_name =
+if index < 0 || index >= Array.length shop then 
+invalid_arg "Index is out of bounds"
+else 
+match shop.(index) with
+| Some slot -> 
+(match slot.item with 
+| Cards card -> Cards.get_card_name card
+| Goods good -> Goods.name good)
+| None -> "EMPTY"
+
+let get_all_data shop =
+let shop_list = Array.to_list shop in
+List.filter_map (fun slot ->
+      match slot with
+      | None -> None
+      | Some slot ->
+          Some (slot.item, slot.buy_price, slot.sell_price) 
+  ) shop_list
+
 let remove_item shop index =
   if index < 0 || index >= Array.length shop then
     invalid_arg "Index is out of bounds"
