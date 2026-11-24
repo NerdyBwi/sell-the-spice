@@ -37,15 +37,15 @@ let medium_s = 1.05
 let slow_s = 1.025
 
 (**Contains the pool of enemies. Entry [0] corresponds to common enemies, Entry
-   [2] corresponds to "elite" enemies, Entry [3] corresponds to "boss" enemies.
+   [1] corresponds to "elite" enemies, Entry [2] corresponds to "boss" enemies.
 
    Each entry's enemy is in the form of:
    [(name, [hp; atk; def; gold_drop], scale_factor, count)])*)
 let enemy_pool =
   [|
     [|
-      ("Ghoul", [ 25; 5; 5; 5 ], fast_s, 1);
-      ("Bandit", [ 35; 10; 2; 10 ], fast_s, 1);
+      ("Ghoul", [ 50; 5; 5; 5 ], fast_s, 1);
+      ("Bandit", [ 85; 10; 2; 10 ], fast_s, 1);
     |];
     [| ("jim", [ 67420; 67420; 67420; 67 ], slow_s, 1) |];
     (* joke enemies not intended to remain in the final game *)

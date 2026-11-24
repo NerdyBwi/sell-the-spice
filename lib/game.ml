@@ -26,7 +26,7 @@ let display_stats player =
 (** [add_starting_cards player] adds ten starting cards to [player]'s deck. *)
 let add_starting_cards player rng =
   let card = Cards.(generate_card Common rng) in
-  for _ = 1 to 7 do
+  for _ = 1 to 8 do
     match Player.add_card card player with
     | Ok () -> ()
     | Error message -> failwith message
@@ -104,7 +104,8 @@ let run_combat rng player =
     display_combat combat;
     if not (Combat.is_over combat) then (
       Display.print_message
-        "Choose a card number to play. (There is no end turn button yet, so press Enter when you have played 3 cards):";
+        "Choose a card number to play. (There is no end turn button yet, so \
+         press Enter when you have played 3 cards):";
       let input = read_line () |> String.trim in
       let card_index = int_of_string_opt input in
       Combat.run_combat rng combat card_index;
