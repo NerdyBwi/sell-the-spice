@@ -46,53 +46,53 @@ let display_combat combat =
       if not (Enemies.check_alive enemy) then Display.print_enemy_defeated enemy)
     enemies
 
-(** [run_shop rng title player] runs a shop encounter and returns the player
+(** [loop_shop rng title player] runs a shop encounter and returns the player
     after the player leaves the shop. *)
-let run_shop rng title player =
+let loop_shop rng title player =
   Display.print_section title;
-  let initial_state = Shop.init_shop rng player in
-  let rec shop_loop shop_state =
-    let current_status = Shop.check_shop_status shop_state in
-    match current_status with
-    | Shop.Leaving -> shop_state.Shop.player
-    | Shop.Buying | Shop.Selling ->
-        let items = Shop.get_all_data shop_state.Shop.shop in
-        let item_count = List.length items in
-        Display.print_shop shop_state.Shop.player items;
-        Display.print_shop_inventory shop_state.Shop.player;
-        let mode =
-          match current_status with
-          | Shop.Buying -> "Buying"
-          | Shop.Selling -> "Selling"
-          | Shop.Leaving -> "Leaving"
-        in
-        Display.print_shop_menu mode item_count;
+  let shop = Shop.init_shop rng player in
+  let rec shop_loop state =
+    if Shop.check_shop_status state = Shop.Leaving then state.Shop.player
+    else
+      let items = Shop.get_all_data state.Shop.shop in
+      let item_count = List.length items in
+      let status = Shop.check_shop_status state in
 
-        let choice = read_line () |> String.trim in
-        let input =
-          match int_of_string_opt choice with
-          | Some number when number >= 1 && number <= item_count ->
-              Some (number - 1)
-          | Some number when number = item_count + 1 -> Some item_count
-          | Some number when number = item_count + 2 -> Some (item_count + 1)
-          | _ -> None
-        in
+      Display.print_shop state.Shop.player items;
+      Display.print_shop_inventory state.Shop.player;
 
-        let updated_state, result = Shop.run_shop shop_state input in
-        (match result with
-        | Shop.Complete -> Display.print_shop_message "Action completed."
-        | Shop.Empty_slot -> Display.print_shop_message "That slot is empty."
-        | Shop.Not_enough_gold ->
-            Display.print_shop_message "You don't have enough gold."
-        | Shop.Not_enough_good ->
-            Display.print_shop_message "You don't have that good to sell."
-        | Shop.Not_sellable ->
-            Display.print_shop_message "Cards cannot be sold."
-        | Shop.Invalid_action ->
-            Display.print_shop_message "Invalid choice. Try again.");
-        shop_loop updated_state
+      let mode =
+        match status with
+        | Shop.Buying -> "Buying"
+        | Shop.Selling -> "Selling"
+        | Shop.Leaving -> "Leaving"
+      in
+      Display.print_shop_menu mode item_count;
+
+      let choice = read_line () |> String.trim in
+      let input =
+        match int_of_string_opt choice with
+        | Some number when number >= 1 && number <= item_count ->
+            Some (number - 1)
+        | Some number when number = item_count + 1 -> Some item_count
+        | Some number when number = item_count + 2 -> Some (item_count + 1)
+        | _ -> None
+      in
+
+      let updated_state, result = Shop.run_shop state input in
+      (match result with
+      | Shop.Complete -> Display.print_shop_message "Action completed."
+      | Shop.Empty_slot -> Display.print_shop_message "That slot is empty."
+      | Shop.Not_enough_gold ->
+          Display.print_shop_message "You don't have enough gold."
+      | Shop.Not_enough_good ->
+          Display.print_shop_message "You don't have that good to sell."
+      | Shop.Not_sellable -> Display.print_shop_message "Cards cannot be sold."
+      | Shop.Invalid_action ->
+          Display.print_shop_message "Invalid choice. Try again.");
+      shop_loop updated_state
   in
-  shop_loop initial_state
+  shop_loop shop
 
 (** [run_combat rng player] runs a combat encounter and returns the player after
     combat ends. *)
@@ -154,7 +154,7 @@ let execute_stage state =
       let updated_player = run_combat state.rng state.player in
       { state with player = updated_player }
   | Shop ->
-      let updated_player = run_shop state.rng "SHOP" state.player in
+      let updated_player = loop_shop state.rng "SHOP" state.player in
       { state with player = updated_player }
 
 (** [calculate_score player] calculates the final score. *)
@@ -193,7 +193,7 @@ let start_game seed name =
   let player = Player.init_player name 100 5 100 10 10 in
   add_starting_cards player rng;
   display_stats player;
-  let player_after_shop = run_shop rng "STARTING SHOP" player in
+  let player_after_shop = loop_shop rng "STARTING SHOP" player in
   let state_after_shop = { stage = 1; player = player_after_shop; rng } in
   let state_after_fight = first_fight state_after_shop in
   finish_game state_after_fight.player
