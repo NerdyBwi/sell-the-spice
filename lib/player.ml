@@ -89,7 +89,7 @@ let get_gold player = player.gold
     result in a negative gold balance. *)
 let add_gold num player =
   let outcome = player.gold + num in
-  if outcome > 0 then Ok (player.gold <- outcome)
+  if outcome >= 0 then Ok (player.gold <- outcome)
   else
     Error
       (Printf.sprintf
@@ -109,7 +109,7 @@ let get_atk player = player.atk
     negative atk balance. *)
 let add_atk num player =
   let outcome = player.atk + num in
-  if outcome > 0 then Ok (player.atk <- outcome)
+  if outcome >= 0 then Ok (player.atk <- outcome)
   else
     Error
       (Printf.sprintf
@@ -177,7 +177,7 @@ let add_deck_size n player =
   let current_size = get_deck_size player in
   let current_deck = get_deck player in
   let occupied_length = Array.length current_deck in
-  if occupied_length > current_size - n then
+  if occupied_length > current_size + n then
     Error error_str_excess_deck_size_remove
   else
     let new_deck =
@@ -303,8 +303,9 @@ let remove_good good player =
       | _ -> false)
   |> function
   | Some i ->
+      let outcome = Ok (snd inventory.(i)) in
       inventory.(i) <- (None, 0);
-      Ok (snd inventory.(i))
+      outcome
   | None -> Error error_str_unfound_good_remove
 
 (** [sell_good_amount good sell_multiplier count player] sells a number of goods
@@ -343,7 +344,7 @@ let add_good_size n player =
   let current_size = get_goods_size player in
   let current_inventory = get_goods player in
   let occupied_length = Array.length current_inventory in
-  if occupied_length > current_size - n then
+  if occupied_length > current_size + n then
     Error error_str_excess_good_size_remove
   else
     let new_bag =

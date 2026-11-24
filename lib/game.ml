@@ -151,7 +151,7 @@ let rec game_loop state =
 let start_game seed name =
   let rng = Random.State.make [| seed |] in
   Display.print_banner ();
-  let player = Player.init_player name 100 15 100 10 10 in
+  let player = Player.init_player name 100 5 100 10 10 in
   add_starting_cards player rng;
   display_stats player;
   let player_after_shop = run_shop rng "STARTING SHOP" player in
