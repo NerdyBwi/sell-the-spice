@@ -65,8 +65,7 @@ let print_hand hand =
   | [] -> print_endline "No cards in hand."
   | cards -> List.iteri (fun i card -> print_card (i + 1) card) cards
 
-(** [print_card_details card] displays the full details of a selected card and
-    the available purchase options. *)
+(** [print_card_details card] displays the full details of a selected card. *)
 let print_card_details card =
   print_section "CARD DETAILS";
   Printf.printf "Name: %s\n" (Cards.get_card_name card);
@@ -75,8 +74,7 @@ let print_card_details card =
   List.iter
     (fun (keyword, amount) ->
       Printf.printf "- %s %d\n" (string_of_keyword keyword) amount)
-    (Cards.get_card_effect card);
-  print_card_purchase_options ()
+    (Cards.get_card_effect card)
 
 (** [print_shop player items] displays the available shop items. Each item
     contains its name, buying price, and selling price. *)
