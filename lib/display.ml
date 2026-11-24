@@ -65,7 +65,8 @@ let print_hand hand =
   | [] -> print_endline "No cards in hand."
   | cards -> List.iteri (fun i card -> print_card (i + 1) card) cards
 
-(** [print_card_details card] displays the full details of a selected card. *)
+(** [print_card_details card] displays the full details of a selected card and
+    the available purchase options. *)
 let print_card_details card =
   print_section "CARD DETAILS";
   Printf.printf "Name: %s\n" (Cards.get_card_name card);
@@ -74,7 +75,8 @@ let print_card_details card =
   List.iter
     (fun (keyword, amount) ->
       Printf.printf "- %s %d\n" (string_of_keyword keyword) amount)
-    (Cards.get_card_effect card)
+    (Cards.get_card_effect card);
+  print_card_purchase_options ()
 
 (** [print_shop player items] displays the available shop items. Each item
     contains its name, buying price, and selling price. *)
@@ -116,6 +118,52 @@ let print_shop_inventory player =
         Printf.printf "- %s x%d (Value: %d each)\n" (Goods.name good) count
           (Goods.value good))
       goods
+
+(** [print_shop_menu mode item_count] displays the current shop mode and
+    available choices. *)
+let print_shop_menu mode item_count =
+  print_endline ("\nCurrent mode: " ^ mode);
+  Printf.printf "\n%d. Switch to %s\n" (item_count + 1)
+    (if mode = "Buying" then "Selling" else "Buying");
+  Printf.printf "%d. Leave shop\n" (item_count + 2);
+  print_endline "\nEnter your choice:"
+
+(** [print_buy_menu items] displays the available items and their prices. Each
+    item is represented by its name and buying price. *)
+let print_buy_menu items =
+  print_section "BUY ITEMS";
+  (match items with
+  | [] -> print_endline "No items available."
+  | items ->
+      List.iteri
+        (fun i (name, price) ->
+          Printf.printf "%d. %s - %d gold\n" (i + 1) name price)
+        items);
+  print_endline "\n0. Back";
+  print_endline "\nChoose an item to view its details:"
+
+(** [print_sell_menu items] displays the goods available for selling. Each item
+    is represented by its name and selling price. *)
+let print_sell_menu items =
+  print_section "SELL GOODS";
+  (match items with
+  | [] -> print_endline "You have no goods to sell."
+  | items ->
+      List.iteri
+        (fun i (name, price) ->
+          Printf.printf "%d. %s - %d gold\n" (i + 1) name price)
+        items);
+  print_endline "\n0. Back";
+  print_endline "\nChoose a good to sell:"
+
+(** [print_card_purchase_options ()] displays the purchase and back options. *)
+let print_card_purchase_options () =
+  print_endline "\n1. Purchase";
+  print_endline "0. Back";
+  print_endline "\nEnter your choice:"
+
+(** [print_shop_message message] displays a shop transaction message. *)
+let print_shop_message message = Printf.printf "\n%s\n" message
 
 (** [print_combat_status player enemies hand goods_value cards_played
      max_cards_per_turn] displays the current combat information. *)
