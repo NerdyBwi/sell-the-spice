@@ -46,6 +46,7 @@ let test_combat_ends_when_enemy_dies _ =
   let enemy = make_enemy () in
   let combat = Combat.init_combat (make_rng ()) (make_player ()) [ enemy ] in
   ignore (Enemies.add_hp (-100) enemy);
+  Combat.run_combat (make_rng ()) combat None;
   assert_bool "Combat should be over when the enemy is defeated"
     (Combat.is_over combat)
 
@@ -53,6 +54,7 @@ let test_combat_ends_when_player_dies _ =
   let player = make_player () in
   let combat = Combat.init_combat (make_rng ()) player [ make_enemy () ] in
   ignore (Player.add_hp (-100) player);
+  Combat.run_combat (make_rng ()) combat None;
   assert_bool "Combat should be over when the player is defeated"
     (Combat.is_over combat)
 

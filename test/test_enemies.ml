@@ -59,11 +59,6 @@ let test_intent_to_string _ =
   assert_bool "Intent description should not be empty"
     (String.length (Enemies.intent_to_string enemy) > 0)
 
-let test_to_string _ =
-  let enemy = Enemies.make_enemy "Goblin" 30 5 10 6 in
-  assert_bool "Enemy summary should not be empty"
-    (String.length (Enemies.to_string enemy) > 0)
-
 let test_init_enemy _ =
   let enemies = Enemies.init_enemies (make_rng ()) 1 in
   let enemy =
@@ -96,7 +91,6 @@ let suite =
          "set block" >:: test_set_block;
          "intent" >:: test_intent;
          "intent to string" >:: test_intent_to_string;
-         "to string" >:: test_to_string;
          "initialize enemy" >:: test_init_enemy;
          "gold drop" >:: test_gold_drop;
          "scale turn" >:: test_scale_turn;

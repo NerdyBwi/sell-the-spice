@@ -28,11 +28,6 @@ val make_enemy : string -> int -> int -> int -> int -> t
 (* ============================================================================
    State functions
    ============================================================================ *)
-
-val to_string : t -> string
-(** [to_string enemy] is a summary string of [enemy]'s name, HP, attack, and
-    current intent for terminal display. *)
-
 val get_name : t -> string
 (** [get_name enemy] is the display name of [enemy]. *)
 

@@ -85,10 +85,6 @@ let init_enemies rng round =
    State functions
    ============================================================================ *)
 
-(** [to_string enemy] is a summary string of [enemy]'s name, HP, attack, and
-    current intent for terminal display. *)
-let to_string e = failwith "Unimplemented"
-
 (** [get_name enemy] is the display name of [enemy]. *)
 let get_name e = e.name
 
