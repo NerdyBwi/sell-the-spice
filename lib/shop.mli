@@ -53,4 +53,5 @@ val sell_goods : t -> int -> Player.t -> transaction_result
     the result of the sale if its a good*)
 
 val check_shop_status : state -> shop_state
+
 val run_shop : state -> int option -> state * transaction_result
