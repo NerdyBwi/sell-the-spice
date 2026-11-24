@@ -5,7 +5,7 @@ Roguelike turn based deckbuilder game themed around being a merchant aiming to m
 **Shop:** Nuo Xiang Yan, Owen (od89)
 > Handles cards and goods being contained in a shop. Manages taking items in and out of the shop.
 
-**Display:** Anish, Brian + Potentially everyone else because GUIs hard
+**Display:** Anish (akd82), Brian + Potentially everyone else because GUIs hard
 > Presents game state and information to the user. (Start with terminal, “upgrade” to GUI or “downgrade” to text if needed)
 
 **Player:** Owen (od89), Brian
@@ -14,10 +14,10 @@ Roguelike turn based deckbuilder game themed around being a merchant aiming to m
 **Enemies:** Brian, Owen (od89)
 > Manages the enemies’ stats and behaviors, turn scaling, and loot dropped if defeated.
 
-**Game:** Anish, Gabe
+**Game:** Anish (akd82), Gabe
 > Handles interactions between modules, game states, user input, and visual UI, handles exceptions/failures
 
-**Main:** Gabe, Anish
+**Main:** Gabe, Anish (akd82)
 > Initializes “Game” with RNG seed and prints exceptions/errors
 
 **Combat:** Brian, Nuo Xiang Yan
