@@ -30,6 +30,23 @@ val print_shop : Player.t -> (string * int * int) list -> unit
 val print_shop_inventory : Player.t -> unit
 (** [print_shop_inventory player] displays the player's cards and goods. *)
 
+val print_shop_menu : string -> int -> unit
+(** [print_shop_menu mode item_count] displays the current shop mode and
+    navigation options. *)
+
+val print_buy_menu : (string * int) list -> unit
+(** [print_buy_menu items] displays available items and their buying prices. *)
+
+val print_sell_menu : (string * int) list -> unit
+(** [print_sell_menu items] displays available goods and their selling prices.
+*)
+
+val print_card_purchase_options : unit -> unit
+(** [print_card_purchase_options ()] displays the purchase and back options. *)
+
+val print_shop_message : string -> unit
+(** [print_shop_message message] displays a shop transaction message. *)
+
 val print_combat_status :
   Player.t -> Enemies.t list -> Cards.t list -> int -> int -> int -> unit
 (** [print_combat_status player enemies hand goods_value cards_played
