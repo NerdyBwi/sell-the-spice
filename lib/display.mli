@@ -41,9 +41,6 @@ val print_sell_menu : (string * int) list -> unit
 (** [print_sell_menu items] displays available goods and their selling prices.
 *)
 
-val print_card_purchase_options : unit -> unit
-(** [print_card_purchase_options ()] displays the purchase and back options. *)
-
 val print_shop_message : string -> unit
 (** [print_shop_message message] displays a shop transaction message. *)
 
