@@ -80,38 +80,16 @@ let get_item_name shop index =
     | None -> "EMPTY"
 
 let get_all_data shop =
-  let shop_list = Array.to_list shop in
-  List.map
-    (fun slot ->
-      match slot with
-      | None -> ("Empty", 0, 0)
-      | Some slot ->
-          Some ((match slot.item with 
-| Cards card -> Cards.get_card_name card
-| Goods good -> Goods.name good), slot.buy_price, slot.sell_price) 
-  ) shop_list
-
-
-
-let get_item_name =
-if index < 0 || index >= Array.length shop then 
-invalid_arg "Index is out of bounds"
-else 
-match shop.(index) with
-| Some slot -> 
-(match slot.item with 
-| Cards card -> Cards.get_card_name card
-| Goods good -> Goods.name good)
-| None -> "EMPTY"
-
-let get_all_data shop =
-let shop_list = Array.to_list shop in
-List.filter_map (fun slot ->
-      match slot with
-      | None -> None
-      | Some slot ->
-          Some (slot.item, slot.buy_price, slot.sell_price) 
-  ) shop_list
+  Array.to_list shop
+  |> List.map (function
+    | None -> ("EMPTY", 0, 0)
+    | Some slot ->
+        let name =
+          match slot.item with
+          | Cards card -> Cards.get_card_name card
+          | Goods good -> Goods.name good
+        in
+        (name, slot.buy_price, slot.sell_price))
 
 let remove_item shop index =
   if index < 0 || index >= Array.length shop then
