@@ -16,16 +16,27 @@ type transaction_result =
 | Not_enough_gold
 | Not_enough_good
 | Not_sellable
+| Invalid_action
 
 type t = slot option array
 (** Shop type, contains an array of item/price tuple*)
 
+type shop_state = 
+| Buying
+| Selling
+| Leaving
+
+type state = {
+    shop : t;
+    player : Player.t;
+    status : shop_state;
+}
 
 let create_slot slot_item buy sell = Some
 {item = slot_item; buy_price = buy ; sell_price = sell}
 
 (** Takes in rng seed to generate shop *)
-let init_shop seed = 
+let init_shop seed player_data = 
 let card1 = create_slot (Cards (Cards.generate_card Card.Common seed)) 10 0 in
 let card2 = create_slot (Cards (Cards.generate_card Card.Uncommon seed)) 20 0 in
 let card3 = create_slot (Cards (Cards.generate_card Card.Rare seed)) 30 0 in
@@ -36,7 +47,8 @@ create_slot (Goods good) (Goods.price good) (Goods.value good)) goods_list in
 
 let shop_list = (card1 :: card2 :: card3) @ convert_goods in
 
-Array.of_list shop_list
+let shop_array = Array.of_list shop_list in
+{shop = shop_array; player = player_data; status = Buying}
 
 
 
@@ -100,3 +112,27 @@ match item_type with
     | Error _ -> Not_enough_good
     | Ok () -> Player.add_gold slot.sell_price player;
     Complete
+
+
+let check_shop_status state = state.status
+
+let run_shop state input_option = 
+match input_option with
+| None -> (state, Invalid_action)
+| Some input -> 
+if input >= 0 && input < Array.length state.shop then
+    match state.status with 
+    | Buying -> let result = (purchase_item state.shop input state.player) in 
+    (state, result)
+    | Selling -> let result = sell_goods state.shop input state.player in 
+    (state, result)
+    | Leaving -> ({state with status = Leaving;}, Invalid_action)
+else if input = Array.length state.shop then 
+let status = state.status in
+    match status with 
+    | Buying -> ({state with status = Selling}, Complete)
+    | Selling -> ({state with status = Buying}, Complete)
+    | Leaving -> ({state with status = Leaving;}, Invalid_action)
+else if input = Array.length state.shop + 1 then ({state with status = Leaving}, Complete)
+else (state, Invalid_action)
+
