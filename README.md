@@ -14,19 +14,19 @@ Roguelike turn based deckbuilder game themed around being a merchant aiming to m
 **Enemies:** Brian (bc544), Owen (od89)
 > Manages the enemies’ stats and behaviors, turn scaling, and loot dropped if defeated.
 
-**Game:** Anish (akd82), Gabe
+**Game:** Anish (akd82), Gabe (gx57)
 > Handles interactions between modules, game states, user input, and visual UI, handles exceptions/failures
 
-**Main:** Gabe, Anish (akd82)
+**Main:** Gabe (gx57), Anish (akd82)
 > Initializes “Game” with RNG seed and prints exceptions/errors
 
 **Combat:** Brian (bc544), Nuo Xiang Yan (ny227)
 > Handles the interaction between Player and enemies, as well as cards
 
-**Cards:** Nuo Xiang Yan (ny227), Gabe
+**Cards:** Nuo Xiang Yan (ny227), Gabe (gx57)
 > Handles the execution of cards as well as their storage 
 
-**Goods:** Gabe, Nuo Xiang Yan (ny227)
+**Goods:** Gabe (gx57), Nuo Xiang Yan (ny227)
 > Make a list of goods available to players. Interacts with Shop, Player, and Combat.
 
 
