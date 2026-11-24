@@ -104,8 +104,7 @@ let run_combat rng player =
     display_combat combat;
     if not (Combat.is_over combat) then (
       Display.print_message
-        "Choose a card number to play, or press Enter to continue/end your \
-         turn:";
+        "Choose a card number to play. (There is no end turn button yet, so press Enter when you have played 3 cards):";
       let input = read_line () |> String.trim in
       let card_index = int_of_string_opt input in
       Combat.run_combat rng combat card_index;
