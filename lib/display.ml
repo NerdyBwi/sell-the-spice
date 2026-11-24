@@ -65,6 +65,58 @@ let print_hand hand =
   | [] -> print_endline "No cards in hand."
   | cards -> List.iteri (fun i card -> print_card (i + 1) card) cards
 
+(** [print_card_details card] displays the full details of a selected card. *)
+let print_card_details card =
+  print_section "CARD DETAILS";
+  Printf.printf "Name: %s\n" (Cards.get_card_name card);
+  Printf.printf "Energy cost: %d\n" (Cards.get_card_energy card);
+  print_endline "Effects:";
+  List.iter
+    (fun (keyword, amount) ->
+      Printf.printf "- %s %d\n" (string_of_keyword keyword) amount)
+    (Cards.get_card_effect card)
+
+(** [print_shop player items] displays the available shop items. Each item
+    contains its name, buying price, and selling price. *)
+let print_shop player items =
+  print_section "SHOP";
+  Printf.printf "Gold: %d\n" (Player.get_gold player);
+  print_endline "\nAvailable items:";
+  match items with
+  | [] -> print_endline "No items available."
+  | items ->
+      List.iteri
+        (fun i (name, buy_price, sell_price) ->
+          Printf.printf "%d. %s | Buy: %d gold | Sell: %d gold\n" (i + 1) name
+            buy_price sell_price)
+        items
+
+(** [print_shop_inventory player] displays the player's current cards and goods
+    inventory. *)
+let print_shop_inventory player =
+  print_section "YOUR INVENTORY";
+  Printf.printf "Gold: %d\n" (Player.get_gold player);
+
+  print_endline "\nCards:";
+  let deck = Player.get_deck player in
+  if Array.length deck = 0 then print_endline "No cards."
+  else
+    Array.iteri
+      (fun i card ->
+        Printf.printf "%d. %s (Cost: %d)\n" (i + 1) (Cards.get_card_name card)
+          (Cards.get_card_energy card))
+      deck;
+
+  print_endline "\nGoods:";
+  let goods = Player.get_goods player in
+  if Array.length goods = 0 then print_endline "No goods."
+  else
+    Array.iter
+      (fun (good, count) ->
+        Printf.printf "- %s x%d (Value: %d each)\n" (Goods.name good) count
+          (Goods.value good))
+      goods
+
 (** [print_combat_status player enemies hand goods_value cards_played
      max_cards_per_turn] displays the current combat information. *)
 let print_combat_status player enemies hand goods_value cards_played
