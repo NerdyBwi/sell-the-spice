@@ -2,7 +2,7 @@
 Roguelike turn based deckbuilder game themed around being a merchant aiming to make a profit through long distance travel and trading.
 
 # Initial responsibilities:
-**Shop:** Nuo Xiang Yan, Owen (od89)
+**Shop:** Nuo Xiang Yan (ny227), Owen (od89)
 > Handles cards and goods being contained in a shop. Manages taking items in and out of the shop.
 
 **Display:** Anish (akd82), Brian + Potentially everyone else because GUIs hard
@@ -20,13 +20,13 @@ Roguelike turn based deckbuilder game themed around being a merchant aiming to m
 **Main:** Gabe, Anish (akd82)
 > Initializes “Game” with RNG seed and prints exceptions/errors
 
-**Combat:** Brian, Nuo Xiang Yan
+**Combat:** Brian, Nuo Xiang Yan (ny227)
 > Handles the interaction between Player and enemies, as well as cards
 
-**Cards:** Nuo Xiang Yan, Gabe
+**Cards:** Nuo Xiang Yan (ny227), Gabe
 > Handles the execution of cards as well as their storage 
 
-**Goods:** Gabe, Nuo Xiang Yan
+**Goods:** Gabe, Nuo Xiang Yan (ny227)
 > Make a list of goods available to players. Interacts with Shop, Player, and Combat.
 
 

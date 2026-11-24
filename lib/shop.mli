@@ -6,7 +6,7 @@ type item
 
 type slot =
 {
-    object : item;
+    item : item;
     buy_price : int;
     sell_price : int;
 }
